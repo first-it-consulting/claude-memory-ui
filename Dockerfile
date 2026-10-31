@@ -14,7 +14,10 @@ RUN useradd -m -u 1000 appuser
 WORKDIR /app
 
 COPY requirements-ui.txt .
-RUN pip install --no-cache-dir -r requirements-ui.txt
+# pip is not needed at runtime; its vendored msgpack/urllib3/pkg_resources
+# are the image's only HIGH CVEs in Trivy
+RUN pip install --no-cache-dir -r requirements-ui.txt \
+    && pip uninstall -y pip
 
 COPY src/ui/app.py ./src/ui/
 COPY --from=builder /app/dist ./src/ui/dist/
