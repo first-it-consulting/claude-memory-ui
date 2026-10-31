@@ -18,7 +18,7 @@ target "image" {
     "registry.example.internal/first-it-consulting/claude-memory-ui:rolling",
   ]
   labels = {
-    "org.opencontainers.image.source" = "https://github.com/janip81/claude-memory"
+    "org.opencontainers.image.source" = "https://github.com/first-it-consulting/claude-memory-ui"
   }
 }
 
