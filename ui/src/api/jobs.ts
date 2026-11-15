@@ -9,6 +9,8 @@ export interface JobRun {
   rules_added: number
   duration_seconds: number | null
   error: string | null
+  /** line-by-line report (checkpoint promotion) */
+  details?: string | null
 }
 
 async function request<T>(path: string): Promise<T> {
