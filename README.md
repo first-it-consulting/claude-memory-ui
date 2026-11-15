@@ -11,6 +11,7 @@ The app is a **React + Vite TypeScript single-page application** served as stati
 - **Memories** — list, search, filter by category/agent, edit content and tags, delete.
 - **Stats** — aggregate views (total memories, by agent, category and tag) with a visual stats bar.
 - **Jobs** — inspect past dedup job runs returned by claude-memory's `/api/jobs`.
+- **Sessions** — session checkpoints (working memory) of Claude Code, Codex and pi sessions: filter by project/harness, read the checkpoint and the auto-captured notes, delete old sessions.
 - **Tag rules** — view and manage keyword→tag auto-classification rules.
 - **Transparent proxy** — the FastAPI layer serves the SPA and proxies API calls to the backend, so there's a single port to expose.
 
@@ -36,7 +37,7 @@ The app is a **React + Vite TypeScript single-page application** served as stati
    └──────────────────────┘
 ```
 
-In production the built SPA (`ui/dist`) is baked into the image and served by FastAPI; every `/api/*` request is proxied to `MCP_INTERNAL_URL` (default `http://claude-memory:8080`) with the configured bearer token attached. During local development Vite proxies `/api` to `http://localhost:8080`.
+In production the built SPA (`ui/dist`) is baked into the image and served by FastAPI; every `/api/*` request is proxied to `MCP_INTERNAL_URL` (default `http://claude-memory:8080`) with the configured bearer token attached. Session checkpoints are reached through `/ui-api/sessions[/{id}]` (GET, DELETE only), because the ingress routes `/api/sessions` and `/api/hooks` straight to the server for the harness adapters. The proxy attaches the token for every caller, so the UI host must sit behind SSO (example-project: oauth2-proxy + a CiliumNetworkPolicy). During local development Vite proxies `/api` to `http://localhost:8080`.
 
 ---
 

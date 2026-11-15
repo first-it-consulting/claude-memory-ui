@@ -13,8 +13,9 @@ import Memories from './pages/Memories'
 import Stats from './pages/Stats'
 import TagRules from './pages/TagRules'
 import Jobs from './pages/Jobs'
+import Sessions from './pages/Sessions'
 
-type Page = 'memories' | 'stats' | 'rules' | 'jobs'
+type Page = 'memories' | 'sessions' | 'stats' | 'rules' | 'jobs'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 10_000 } },
@@ -126,6 +127,7 @@ export default function App() {
                 textColor="inherit"
               >
                 <Tab label="Memories" value="memories" />
+                <Tab label="Sessions" value="sessions" />
                 <Tab label="Stats" value="stats" />
                 <Tab label="Tag Rules" value="rules" />
                 <Tab label="Jobs" value="jobs" />
@@ -134,6 +136,7 @@ export default function App() {
           </AppBar>
           <Box component="main">
             {page === 'memories' && <Memories />}
+            {page === 'sessions' && <Sessions />}
             {page === 'stats' && <Stats />}
             {page === 'rules' && <TagRules />}
             {page === 'jobs' && <Jobs />}

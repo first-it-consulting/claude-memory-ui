@@ -3,6 +3,7 @@ UI backend — static file server + transparent proxy to MCP /api/*.
 No mem0 or DB dependency; only httpx for the proxy.
 """
 import os
+from urllib.parse import quote
 from pathlib import Path
 
 import httpx
@@ -50,6 +51,26 @@ async def proxy(path: str, request: Request) -> Response:
         status_code=resp.status_code,
         headers={"content-type": resp.headers.get("content-type", "application/json"),
                  "content-disposition": resp.headers.get("content-disposition", "")},
+    )
+
+
+# Session checkpoints for the Sessions page. The ingress routes /api/sessions
+# straight to the server (bearer token required, used by the harness
+# adapters), so the browser reaches them through this separate prefix, behind
+# the UI's SSO. Read and delete only; checkpoints are written by the agents.
+@app.api_route("/ui-api/sessions", methods=["GET"])
+@app.api_route("/ui-api/sessions/{session_id:path}", methods=["GET", "DELETE"])
+async def sessions_proxy(request: Request, session_id: str = "") -> Response:
+    path = "/api/sessions" + (f"/{quote(session_id, safe='')}" if session_id else "")
+    url = f"{MCP_URL}{path}"
+    if request.url.query:
+        url = f"{url}?{request.url.query}"
+    async with httpx.AsyncClient() as client:
+        resp = await client.request(method=request.method, url=url, headers=dict(_HEADERS), timeout=30)
+    return Response(
+        content=resp.content,
+        status_code=resp.status_code,
+        headers={"content-type": resp.headers.get("content-type", "application/json")},
     )
 
 
