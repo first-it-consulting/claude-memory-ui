@@ -5,6 +5,8 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Switch from '@mui/material/Switch'
 import FormControl from '@mui/material/FormControl'
 import InputAdornment from '@mui/material/InputAdornment'
 import InputLabel from '@mui/material/InputLabel'
@@ -13,6 +15,7 @@ import Select from '@mui/material/Select'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Toolbar from '@mui/material/Toolbar'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import AddIcon from '@mui/icons-material/Add'
 import DownloadIcon from '@mui/icons-material/Download'
@@ -30,6 +33,7 @@ export default function Memories() {
   const [sort, setSort] = useState<Sort>('newest')
   const [agentFilter, setAgentFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [autoOnly, setAutoOnly] = useState(false)
   const [addText, setAddText] = useState('')
   const [showAdd, setShowAdd] = useState(false)
 
@@ -40,6 +44,7 @@ export default function Memories() {
     sort: deferredSearch ? 'relevance' : sort,
     agent_id: agentFilter || undefined,
     category: categoryFilter || undefined,
+    tag: autoOnly ? 'auto-promoted' : undefined,
   }
 
   const { data: stats } = useQuery({
@@ -136,6 +141,14 @@ export default function Memories() {
             </Select>
           </FormControl>
         )}
+
+        <Tooltip title="Decisions and dead ends copied automatically from finished session checkpoints">
+          <FormControlLabel
+            control={<Switch size="small" checked={autoOnly} onChange={(e) => setAutoOnly(e.target.checked)} />}
+            label={<Typography variant="body2">Auto-promoted</Typography>}
+            sx={{ mx: 0.5 }}
+          />
+        </Tooltip>
 
         <Button
           startIcon={<AddIcon />}

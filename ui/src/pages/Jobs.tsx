@@ -1,8 +1,13 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
@@ -37,6 +42,7 @@ function PhaseChip({ phase }: { phase: string }) {
     'llm-tagging': '#7c4dff',
     'hash-dedup': '#0288d1',
     'semantic-dedup': '#00897b',
+    'checkpoint-promotion': '#ef6c00',
   }
   return (
     <Chip
@@ -58,9 +64,14 @@ export default function Jobs() {
   // Aggregate totals across all completed runs
   const completed = jobs.filter(j => j.status === 'completed')
   const totalTagged = completed.filter(j => j.phase === 'llm-tagging').reduce((s, j) => s + j.memories_changed, 0)
-  const totalDeduped = completed.filter(j => j.phase !== 'llm-tagging').reduce((s, j) => s + j.memories_changed, 0)
+  const totalDeduped = completed.filter(j => j.phase === 'hash-dedup' || j.phase === 'semantic-dedup').reduce((s, j) => s + j.memories_changed, 0)
+  // dry runs only report what would be promoted
+  const totalPromoted = completed
+    .filter(j => j.phase === 'checkpoint-promotion' && !(j.details ?? '').startsWith('DRY RUN'))
+    .reduce((s, j) => s + j.memories_changed, 0)
   const totalRulesAdded = completed.reduce((s, j) => s + (j.rules_added ?? 0), 0)
   const lastRun = jobs[0] ?? null
+  const [report, setReport] = useState<JobRun | null>(null)
 
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', px: 2, py: 3 }}>
@@ -88,6 +99,10 @@ export default function Jobs() {
           <Typography variant="caption" color="text.secondary">memories deduped</Typography>
         </Box>
         <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>{totalPromoted.toLocaleString()}</Typography>
+          <Typography variant="caption" color="text.secondary">checkpoint lines promoted</Typography>
+        </Box>
+        <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>{totalRulesAdded.toLocaleString()}</Typography>
           <Typography variant="caption" color="text.secondary">rules discovered</Typography>
         </Box>
@@ -112,6 +127,7 @@ export default function Jobs() {
                 <TableCell align="right">Rules+</TableCell>
                 <TableCell align="right">Duration</TableCell>
                 <TableCell>Error</TableCell>
+                <TableCell>Report</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -131,11 +147,18 @@ export default function Jobs() {
                       </Tooltip>
                     ) : null}
                   </TableCell>
+                  <TableCell>
+                    {job.details ? (
+                      <Button size="small" onClick={() => setReport(job)} sx={{ fontSize: 11, minWidth: 0 }}>
+                        view
+                      </Button>
+                    ) : null}
+                  </TableCell>
                 </TableRow>
               ))}
               {jobs.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  <TableCell colSpan={9} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                     No job runs yet. The nightly CronJob logs each phase here.
                   </TableCell>
                 </TableRow>
@@ -144,6 +167,17 @@ export default function Jobs() {
           </Table>
         </TableContainer>
       )}
+
+      <Dialog open={!!report} onClose={() => setReport(null)} maxWidth="lg" fullWidth>
+        <DialogTitle sx={{ fontSize: 16 }}>
+          {report?.phase} · {fmtDate(report?.started_at ?? null)}
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box component="pre" sx={{ m: 0, fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {report?.details}
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   )
 }

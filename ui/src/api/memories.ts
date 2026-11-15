@@ -25,6 +25,7 @@ export interface FetchParams {
   sort?: 'newest' | 'oldest' | 'relevance'
   agent_id?: string
   category?: string
+  tag?: string
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -43,6 +44,7 @@ export const api = {
     if (params.sort) qs.set('sort', params.sort)
     if (params.agent_id) qs.set('agent_id', params.agent_id)
     if (params.category) qs.set('category', params.category)
+    if (params.tag) qs.set('tag', params.tag)
     return request(`/api/memories${qs.size ? `?${qs}` : ''}`)
   },
 
