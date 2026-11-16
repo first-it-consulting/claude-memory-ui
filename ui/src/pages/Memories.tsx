@@ -142,10 +142,10 @@ export default function Memories() {
           </FormControl>
         )}
 
-        <Tooltip title="Decisions and dead ends copied automatically from finished session checkpoints">
+        <Tooltip title="Filter: show only memories copied automatically from the Decisions / Dead ends of finished session checkpoints">
           <FormControlLabel
             control={<Switch size="small" checked={autoOnly} onChange={(e) => setAutoOnly(e.target.checked)} />}
-            label={<Typography variant="body2">Auto-promoted</Typography>}
+            label={<Typography variant="body2">Only auto-promoted</Typography>}
             sx={{ mx: 0.5 }}
           />
         </Tooltip>

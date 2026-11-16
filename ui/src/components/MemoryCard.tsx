@@ -128,6 +128,11 @@ export default function MemoryCard({ memory, onDelete, onUpdate, onUpdateTags }:
               {memory.agent_id && (
                 <Chip label={memory.agent_id} size="small" color="primary" variant="outlined" sx={{ fontSize: 11, fontFamily: 'monospace' }} />
               )}
+              {(memory.tags ?? []).includes('auto-promoted') && (
+                <Tooltip title="Copied automatically from a finished session's checkpoint">
+                  <Chip label="auto" size="small" sx={{ fontSize: 11, bgcolor: '#ef6c00', color: '#fff' }} />
+                </Tooltip>
+              )}
               {memory.score != null && (
                 <Chip label={`score ${memory.score.toFixed(3)}`} size="small" sx={{ fontSize: 11, fontFamily: 'monospace' }} />
               )}
