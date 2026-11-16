@@ -71,6 +71,9 @@ export default function Jobs() {
     .reduce((s, j) => s + j.memories_changed, 0)
   const totalRulesAdded = completed.reduce((s, j) => s + (j.rules_added ?? 0), 0)
   const lastRun = jobs[0] ?? null
+  // mode of checkpoint promotion, as seen in its latest report (jobs are newest first)
+  const lastPromotion = jobs.find(j => j.phase === 'checkpoint-promotion' && j.status === 'completed')
+  const promotionMode = !lastPromotion ? null : (lastPromotion.details ?? '').startsWith('DRY RUN') ? 'dry-run' : 'on'
   const [report, setReport] = useState<JobRun | null>(null)
 
   return (
@@ -81,6 +84,16 @@ export default function Jobs() {
           {lastRun ? `last run ${fmtDate(lastRun.started_at)}` : 'no runs yet'}
         </Typography>
       </Box>
+
+      {promotionMode && (
+        <Tooltip title={`From the latest checkpoint-promotion run (${fmtDate(lastPromotion!.started_at)}). Set via PROMOTE_MODE in the dedup CronJob.`}>
+          <Chip
+            size="small"
+            label={`Checkpoint promotion: ${promotionMode === 'on' ? 'ON' : 'DRY RUN (report only)'}`}
+            sx={{ mb: 1, fontWeight: 600, bgcolor: promotionMode === 'on' ? '#2e7d32' : '#ef6c00', color: '#fff' }}
+          />
+        </Tooltip>
+      )}
 
       <Divider sx={{ mb: 2 }} />
 
