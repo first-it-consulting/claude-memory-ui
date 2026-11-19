@@ -15,6 +15,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/ui-api/, '/api'),
       },
+      // Keycloak settings: served by the FastAPI proxy (python src/ui/app.py)
+      '/ui-config.json': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+      },
     },
   },
 })

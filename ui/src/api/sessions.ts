@@ -2,8 +2,11 @@
 // Served under /ui-api/* by the UI backend: the ingress routes /api/sessions
 // straight to the server for the harness adapters (bearer token required).
 
+import { request } from './http'
+
 export interface Session {
   session_id: string
+  owner: string
   project: string
   harness: string
   state: string
@@ -16,12 +19,9 @@ export interface SessionParams {
   project?: string
   harness?: string
   limit?: number
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json()
+  /** admin workspace scope */
+  scope?: 'all'
+  tenant?: string
 }
 
 export const sessionsApi = {
@@ -29,12 +29,19 @@ export const sessionsApi = {
     const qs = new URLSearchParams()
     if (params.project) qs.set('project', params.project)
     if (params.harness) qs.set('harness', params.harness)
+    if (params.scope) qs.set('scope', params.scope)
+    if (params.tenant) qs.set('tenant', params.tenant)
     qs.set('limit', String(params.limit ?? 100))
     return request(`/ui-api/sessions?${qs}`)
   },
 
-  remove: (id: string): Promise<{ ok: boolean }> =>
-    request(`/ui-api/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  remove: (id: string, scope: { scope?: string; tenant?: string } = {}): Promise<{ ok: boolean }> => {
+    const qs = new URLSearchParams()
+    if (scope.scope) qs.set('scope', scope.scope)
+    if (scope.tenant) qs.set('tenant', scope.tenant)
+    const suffix = qs.size ? `?${qs}` : ''
+    return request(`/ui-api/sessions/${encodeURIComponent(id)}${suffix}`, { method: 'DELETE' })
+  },
 }
 
 /** First line of the "## Goal" section, or the first non-empty line.

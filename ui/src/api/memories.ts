@@ -1,9 +1,12 @@
+import { request } from './http'
+
 export type MemoryCategory = 'project' | 'feedback' | 'reference' | 'user' | 'session' | 'incident' | ''
 
 export interface Memory {
   id: string
   memory: string
   agent_id: string
+  tenant: string
   category: MemoryCategory
   tags: string[]
   created_at: string
@@ -26,33 +29,32 @@ export interface FetchParams {
   agent_id?: string
   category?: string
   tag?: string
+  /** admin workspace scope */
+  scope?: 'all'
+  tenant?: string
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json()
+function qs(params: FetchParams): string {
+  const qs = new URLSearchParams()
+  for (const k of ['q', 'sort', 'agent_id', 'category', 'tag', 'scope', 'tenant'] as const) {
+    const v = params[k]
+    if (v) qs.set(k, v)
+  }
+  return qs.size ? `?${qs}` : ''
 }
 
 export const api = {
-  stats: (): Promise<Stats> =>
-    request('/api/stats'),
+  stats: (params: FetchParams = {}): Promise<Stats> =>
+    request(`/api/stats${qs(params)}`),
 
-  list: (params: FetchParams = {}): Promise<Memory[]> => {
-    const qs = new URLSearchParams()
-    if (params.q) qs.set('q', params.q)
-    if (params.sort) qs.set('sort', params.sort)
-    if (params.agent_id) qs.set('agent_id', params.agent_id)
-    if (params.category) qs.set('category', params.category)
-    if (params.tag) qs.set('tag', params.tag)
-    return request(`/api/memories${qs.size ? `?${qs}` : ''}`)
-  },
+  list: (params: FetchParams = {}): Promise<Memory[]> =>
+    request(`/api/memories${qs(params)}`),
 
-  add: (content: string): Promise<{ ok: boolean }> =>
+  add: (content: string, shared = false): Promise<{ ok: boolean }> =>
     request('/api/memories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, shared }),
     }),
 
   update: (id: string, content: string): Promise<{ ok: boolean }> =>
@@ -72,5 +74,5 @@ export const api = {
   delete: (id: string): Promise<{ ok: boolean }> =>
     request(`/api/memories/${id}`, { method: 'DELETE' }),
 
-  exportUrl: '/api/memories/export',
+  exportPath: (params: FetchParams = {}): string => `/api/memories/export${qs(params)}`,
 }

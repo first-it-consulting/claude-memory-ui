@@ -1,3 +1,5 @@
+import { request } from './http'
+
 export interface JobRun {
   id: string
   started_at: string
@@ -11,12 +13,6 @@ export interface JobRun {
   error: string | null
   /** line-by-line report (checkpoint promotion) */
   details?: string | null
-}
-
-async function request<T>(path: string): Promise<T> {
-  const res = await fetch(path)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json()
 }
 
 export const jobsApi = {
