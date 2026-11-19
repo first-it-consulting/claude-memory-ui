@@ -8,12 +8,14 @@ The app is a **React + Vite TypeScript single-page application** served as stati
 
 ## Features
 
+- **Keycloak login** — the SPA signs users in via Keycloak (authorization code + PKCE); every API call carries the user's access token and the backend scopes it to their workspace.
+- **Multi-tenancy** — each user sees their own memories/sessions plus the admin-published shared space; admins get a workspace scope selector (mine / one tenant / all), the Jobs tab, and a **Users** page for workspace + API-token management.
 - **Memories** — list, search, filter by category/agent, edit content and tags, delete.
 - **Stats** — aggregate views (total memories, by agent, category and tag) with a visual stats bar.
-- **Jobs** — inspect past dedup job runs returned by claude-memory's `/api/jobs`.
+- **Jobs** — inspect past dedup job runs returned by claude-memory's `/api/jobs` (admin).
 - **Sessions** — session checkpoints (working memory) of Claude Code, Codex and pi sessions: filter by project/harness, read the checkpoint and the auto-captured notes, delete old sessions.
-- **Tag rules** — view and manage keyword→tag auto-classification rules.
-- **Transparent proxy** — the FastAPI layer serves the SPA and proxies API calls to the backend, so there's a single port to expose.
+- **Tag rules** — view and manage keyword→tag auto-classification rules (writes admin-only).
+- **Transparent proxy** — the FastAPI layer serves the SPA and proxies API calls to the backend, so there's a single port to expose. With Keycloak configured it forwards the browser's `Authorization` header untouched; without it (legacy single-tenant mode) it injects the shared `BEARER_TOKEN`.
 
 ---
 
@@ -37,7 +39,9 @@ The app is a **React + Vite TypeScript single-page application** served as stati
    └──────────────────────┘
 ```
 
-In production the built SPA (`ui/dist`) is baked into the image and served by FastAPI; every `/api/*` request is proxied to `MCP_INTERNAL_URL` (default `http://claude-memory:8080`) with the configured bearer token attached. Session checkpoints are reached through `/ui-api/sessions[/{id}]` (GET, DELETE only), because the ingress routes `/api/sessions` and `/api/hooks` straight to the server for the harness adapters. The proxy attaches the token for every caller, so the UI host must sit behind SSO (example-project: oauth2-proxy + a CiliumNetworkPolicy). During local development Vite proxies `/api` to `http://localhost:8080`.
+In production the built SPA (`ui/dist`) is baked into the image and served by FastAPI; every `/api/*` request is proxied to `MCP_INTERNAL_URL` (default `http://claude-memory:8080`). With `KEYCLOAK_URL` set, the browser authenticates itself — the SPA does the Keycloak flow and the proxy forwards each caller's `Authorization` header untouched (the backend verifies the JWT, see claude-memory's `auth.py`), so the UI no longer needs oauth2-proxy in front for identification. Without `KEYCLOAK_URL` the proxy attaches the shared `BEARER_TOKEN` for every caller (legacy single-tenant mode; keep the UI behind SSO in that mode). Session checkpoints are reached through `/ui-api/sessions[/{id}]` (GET, DELETE only), because the ingress routes `/api/sessions` and `/api/hooks` straight to the server for the harness adapters. During local development Vite proxies `/api` to `http://localhost:8080`.
+
+The SPA reads its Keycloak settings at runtime from the proxy's `GET /ui-config.json` — realm changes need no rebuild. In the realm, give the UI client a web origin for the SPA host (redirect + CORS) and create the realm role `claude-memory-admin` to grant admins.
 
 ---
 
@@ -48,8 +52,11 @@ Runtime settings are environment variables (see `src/ui/app.py`):
 | Variable | Default | Description |
 |---|---|---|
 | `MCP_INTERNAL_URL` | `http://claude-memory:8080` | Backend claude-memory API URL (used by the proxy). |
-| `BEARER_TOKEN` | *(empty)* | Bearer token forwarded to the backend for `/api/*` proxying. Match this to claude-memory's `BEARER_TOKEN`. |
+| `BEARER_TOKEN` | *(empty)* | Legacy mode only: shared token injected when no Keycloak is configured. Match this to claude-memory's `BEARER_TOKEN`. |
 | `UI_PORT` | `8081` | Port the proxy/SPA listens on. |
+| `KEYCLOAK_URL` | *(empty)* | Keycloak base URL; setting it enables browser login and per-user token forwarding. |
+| `KEYCLOAK_REALM` | `master` | Realm the UI logs into (must match claude-memory's `OIDC_ISSUER` realm). |
+| `KEYCLOAK_CLIENT_ID` | `claude-memory-ui` | Public OIDC client; its id is the token audience the backend expects. |
 
 The dev server (`vite`) in `ui/vite.config.ts` proxies `/api` → `http://localhost:8080`.
 

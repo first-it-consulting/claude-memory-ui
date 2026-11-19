@@ -29,6 +29,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 import { Session, goalOf, sessionsApi } from '../api/sessions'
+import ScopeSelect from '../components/ScopeSelect'
+import { useScope } from '../ScopeContext'
+import { useWhoami } from '../useWhoami'
 
 const HARNESS_COLORS: Record<string, string> = {
   claude: '#d97757',
@@ -137,22 +140,25 @@ function SessionDrawer({ session, onClose, onDelete }: {
 
 export default function Sessions() {
   const queryClient = useQueryClient()
+  const { scope, params: scopeParams } = useScope()
+  const { isAdmin } = useWhoami()
   const [project, setProject] = useState('')
   const [harness, setHarness] = useState('')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Session | null>(null)
   const [toDelete, setToDelete] = useState<Session | null>(null)
 
-  // Load everything once (max 100 most recent) and filter client-side, so
-  // the project/harness pickers always offer all known values.
+  // Load everything once (max 100 most recent, in the admin's selected
+  // workspace scope) and filter client-side, so the project/harness pickers
+  // always offer all known values.
   const { data: sessions = [], isLoading, isError } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => sessionsApi.list({ limit: 100 }),
+    queryKey: ['sessions', scopeParams],
+    queryFn: () => sessionsApi.list({ limit: 100, ...scopeParams }),
     refetchInterval: 30_000,
   })
 
   const remove = useMutation({
-    mutationFn: (id: string) => sessionsApi.remove(id),
+    mutationFn: (id: string) => sessionsApi.remove(id, scopeParams),
     onSuccess: (_r, id) => {
       queryClient.setQueryData<Session[]>(['sessions'], old => (old ?? []).filter(s => s.session_id !== id))
       if (selected?.session_id === id) setSelected(null)
@@ -214,6 +220,7 @@ export default function Sessions() {
             <ToggleButton key={h} value={h} sx={{ textTransform: 'none', px: 1.5, fontFamily: 'monospace' }}>{h}</ToggleButton>
           ))}
         </ToggleButtonGroup>
+        {isAdmin && <ScopeSelect />}
       </Box>
 
       {isError && <Alert severity="error" sx={{ mb: 2 }}>Failed to load sessions.</Alert>}
@@ -227,6 +234,7 @@ export default function Sessions() {
             <TableHead>
               <TableRow>
                 <TableCell>Updated</TableCell>
+                {scope.mode !== 'own' && <TableCell>Workspace</TableCell>}
                 <TableCell>Project</TableCell>
                 <TableCell>Harness</TableCell>
                 <TableCell>Goal</TableCell>
@@ -239,6 +247,9 @@ export default function Sessions() {
                   <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 12 }}>
                     <Tooltip title={fmtDate(s.updated_at)}><span>{fmtAgo(s.updated_at)}</span></Tooltip>
                   </TableCell>
+                  {scope.mode !== 'own' && (
+                    <TableCell sx={{ fontSize: 11, fontFamily: 'monospace' }}>{s.owner || 'default'}</TableCell>
+                  )}
                   <TableCell sx={{ fontSize: 12, fontWeight: 500 }}>{s.project || '—'}</TableCell>
                   <TableCell><HarnessChip harness={s.harness} /></TableCell>
                   <TableCell sx={{ fontSize: 12, maxWidth: 520 }}>
@@ -260,7 +271,7 @@ export default function Sessions() {
               ))}
               {shown.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  <TableCell colSpan={scope.mode !== 'own' ? 6 : 5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                     {sessions.length === 0
                       ? 'No sessions yet. Agents with the claude-memory adapter save checkpoints here.'
                       : 'No sessions match the filters.'}

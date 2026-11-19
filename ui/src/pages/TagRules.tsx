@@ -16,13 +16,14 @@ import AddIcon from '@mui/icons-material/Add'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import { tagRulesApi, TagRule } from '../api/tag-rules'
+import { useWhoami } from '../useWhoami'
 
 function SourceBadge({ source }: { source: string }) {
   const color = source === 'manual' ? 'primary' : source === 'seed' ? 'default' : 'warning'
   return <Chip label={source} size="small" color={color as any} variant="outlined" sx={{ fontSize: 10, height: 18 }} />
 }
 
-function TagGroup({ rule, onDeleteKeyword }: { rule: TagRule; onDeleteKeyword: (tag: string, kw: string) => void }) {
+function TagGroup({ rule, canEdit, onDeleteKeyword }: { rule: TagRule; canEdit: boolean; onDeleteKeyword: (tag: string, kw: string) => void }) {
   const [expanded, setExpanded] = useState(true)
   return (
     <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, px: 2, py: 1 }}>
@@ -45,7 +46,7 @@ function TagGroup({ rule, onDeleteKeyword }: { rule: TagRule; onDeleteKeyword: (
               size="small"
               variant="outlined"
               color="success"
-              onDelete={() => onDeleteKeyword(rule.tag, kw)}
+              onDelete={canEdit ? () => onDeleteKeyword(rule.tag, kw) : undefined}
               sx={{ fontFamily: 'monospace', fontSize: 11 }}
             />
           ))}
@@ -57,6 +58,7 @@ function TagGroup({ rule, onDeleteKeyword }: { rule: TagRule; onDeleteKeyword: (
 
 export default function TagRules() {
   const qc = useQueryClient()
+  const { isAdmin } = useWhoami()
   const [newTag, setNewTag] = useState('')
   const [newKeyword, setNewKeyword] = useState('')
   const [filterText, setFilterText] = useState('')
@@ -100,7 +102,13 @@ export default function TagRules() {
 
       <Divider sx={{ mb: 2 }} />
 
-      {/* Add rule form */}
+      {/* Add rule form (admin — rules apply to every workspace) */}
+      {!isAdmin && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Tag rules are shared by all workspaces and can only be changed by admins.
+        </Alert>
+      )}
+      {isAdmin && (
       <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <TextField
           label="Tag"
@@ -135,6 +143,7 @@ export default function TagRules() {
           Add keyword
         </Button>
       </Box>
+      )}
 
       {addMutation.isError && (
         <Alert severity="error" sx={{ mb: 2 }}>Failed to add rule.</Alert>
@@ -162,6 +171,7 @@ export default function TagRules() {
             <TagGroup
               key={rule.tag}
               rule={rule}
+              canEdit={isAdmin}
               onDeleteKeyword={(tag, kw) => deleteMutation.mutate({ tag, keyword: kw })}
             />
           ))}

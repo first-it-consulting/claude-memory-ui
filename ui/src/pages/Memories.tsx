@@ -21,13 +21,19 @@ import AddIcon from '@mui/icons-material/Add'
 import DownloadIcon from '@mui/icons-material/Download'
 import SearchIcon from '@mui/icons-material/Search'
 import { api, FetchParams } from '../api/memories'
+import { download } from '../api/http'
 import MemoryCard from '../components/MemoryCard'
 import StatsBar from '../components/StatsBar'
+import ScopeSelect from '../components/ScopeSelect'
+import { useScope } from '../ScopeContext'
+import { useWhoami } from '../useWhoami'
 
 type Sort = 'newest' | 'oldest' | 'relevance'
 
 export default function Memories() {
   const qc = useQueryClient()
+  const { scope, params: scopeParams } = useScope()
+  const { me, isAdmin } = useWhoami()
 
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<Sort>('newest')
@@ -35,6 +41,7 @@ export default function Memories() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [autoOnly, setAutoOnly] = useState(false)
   const [addText, setAddText] = useState('')
+  const [addShared, setAddShared] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
 
   const deferredSearch = useDeferredValue(search)
@@ -45,11 +52,12 @@ export default function Memories() {
     agent_id: agentFilter || undefined,
     category: categoryFilter || undefined,
     tag: autoOnly ? 'auto-promoted' : undefined,
+    ...scopeParams,
   }
 
   const { data: stats } = useQuery({
-    queryKey: ['stats'],
-    queryFn: api.stats,
+    queryKey: ['stats', scopeParams],
+    queryFn: () => api.stats(scopeParams),
     refetchInterval: 30_000,
   })
 
@@ -67,8 +75,8 @@ export default function Memories() {
   }, [qc])
 
   const addMutation = useMutation({
-    mutationFn: (content: string) => api.add(content),
-    onSuccess: () => { setAddText(''); setShowAdd(false); invalidate() },
+    mutationFn: ({ content, shared }: { content: string; shared: boolean }) => api.add(content, shared),
+    onSuccess: () => { setAddText(''); setAddShared(false); setShowAdd(false); invalidate() },
   })
 
   const updateMutation = useMutation({
@@ -85,6 +93,12 @@ export default function Memories() {
     mutationFn: (id: string) => api.delete(id),
     onSuccess: invalidate,
   })
+
+  const sharedTenant = me?.shared_tenant ?? 'global'
+  // Own workspace or (for admins) anything; non-admins never edit the shared
+  // space or foreign workspaces — the server would answer 404 anyway.
+  const canEdit = (m: (typeof memories)[number]) =>
+    isAdmin || (!!me && m.tenant === me.user_id)
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: 2, py: 3 }}>
@@ -111,6 +125,8 @@ export default function Memories() {
             },
           }}
         />
+
+        {isAdmin && <ScopeSelect />}
 
         {!search && (
           <FormControl size="small" sx={{ minWidth: 130 }}>
@@ -163,9 +179,7 @@ export default function Memories() {
           startIcon={<DownloadIcon />}
           variant="outlined"
           size="small"
-          component="a"
-          href={api.exportUrl}
-          download="memories.json"
+          onClick={() => download(api.exportPath(scopeParams), 'memories.json')}
         >
           Export
         </Button>
@@ -173,26 +187,37 @@ export default function Memories() {
 
       {/* Add form */}
       {showAdd && (
-        <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'flex-end' }}>
-          <TextField
-            multiline
-            minRows={2}
-            fullWidth
-            size="small"
-            placeholder="Type a memory to add…"
-            value={addText}
-            onChange={(e) => setAddText(e.target.value)}
-            slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
-          />
-          <Button
-            variant="contained"
-            size="small"
-            disabled={!addText.trim() || addMutation.isPending}
-            onClick={() => addMutation.mutate(addText.trim())}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            Save
-          </Button>
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+            <TextField
+              multiline
+              minRows={2}
+              fullWidth
+              size="small"
+              placeholder="Type a memory to add…"
+              value={addText}
+              onChange={(e) => setAddText(e.target.value)}
+              slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              disabled={!addText.trim() || addMutation.isPending}
+              onClick={() => addMutation.mutate({ content: addText.trim(), shared: addShared })}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Save
+            </Button>
+          </Box>
+          {isAdmin && (
+            <Tooltip title="Publish into the shared space so every workspace can read it (instead of your own workspace)">
+              <FormControlLabel
+                control={<Switch size="small" checked={addShared} onChange={(e) => setAddShared(e.target.checked)} />}
+                label={<Typography variant="body2">Publish to shared space</Typography>}
+                sx={{ mt: 0.5 }}
+              />
+            </Tooltip>
+          )}
         </Box>
       )}
 
@@ -214,6 +239,9 @@ export default function Memories() {
             <MemoryCard
               key={m.id}
               memory={m}
+              canEdit={canEdit(m)}
+              showTenant={scope.mode !== 'own' || m.tenant === sharedTenant}
+              sharedTenant={sharedTenant}
               onDelete={(id) => deleteMutation.mutate(id)}
               onUpdate={(id, content) => updateMutation.mutate({ id, content })}
               onUpdateTags={(id, tags) => updateTagsMutation.mutate({ id, tags })}

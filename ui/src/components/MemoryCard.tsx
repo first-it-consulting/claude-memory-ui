@@ -22,12 +22,18 @@ function fmtDate(iso: string): string {
 
 interface Props {
   memory: Memory
+  /** false for memories the caller may not modify (another workspace's, or
+   *  the shared space for non-admins) — the server enforces this too */
+  canEdit: boolean
+  /** show the owning workspace chip (admin scope / shared entries) */
+  showTenant?: boolean
+  sharedTenant?: string
   onDelete: (id: string) => void
   onUpdate: (id: string, content: string) => void
   onUpdateTags: (id: string, tags: string[]) => void
 }
 
-export default function MemoryCard({ memory, onDelete, onUpdate, onUpdateTags }: Props) {
+export default function MemoryCard({ memory, canEdit, showTenant, sharedTenant, onDelete, onUpdate, onUpdateTags }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(memory.memory)
 
@@ -128,6 +134,14 @@ export default function MemoryCard({ memory, onDelete, onUpdate, onUpdateTags }:
               {memory.agent_id && (
                 <Chip label={memory.agent_id} size="small" color="primary" variant="outlined" sx={{ fontSize: 11, fontFamily: 'monospace' }} />
               )}
+              {memory.tenant && memory.tenant === sharedTenant && (
+                <Tooltip title="Published by an admin into the shared space — visible to every workspace">
+                  <Chip label="shared" size="small" sx={{ fontSize: 11, bgcolor: '#2e7d32', color: '#fff' }} />
+                </Tooltip>
+              )}
+              {showTenant && memory.tenant && memory.tenant !== sharedTenant && (
+                <Chip label={memory.tenant} size="small" variant="outlined" sx={{ fontSize: 11, fontFamily: 'monospace' }} />
+              )}
               {(memory.tags ?? []).includes('auto-promoted') && (
                 <Tooltip title="Copied automatically from a finished session's checkpoint">
                   <Chip label="auto" size="small" sx={{ fontSize: 11, bgcolor: '#ef6c00', color: '#fff' }} />
@@ -193,12 +207,16 @@ export default function MemoryCard({ memory, onDelete, onUpdate, onUpdateTags }:
                 <Tooltip title="Save tags"><IconButton size="small" onClick={handleTagsSave} color="success"><CheckIcon fontSize="small" /></IconButton></Tooltip>
                 <Tooltip title="Cancel"><IconButton size="small" onClick={handleTagsCancel}><CloseIcon fontSize="small" /></IconButton></Tooltip>
               </>
-            ) : (
+            ) : canEdit ? (
               <>
                 <Tooltip title="Edit content"><IconButton size="small" onClick={() => setEditing(true)}><EditIcon fontSize="small" /></IconButton></Tooltip>
                 <Tooltip title="Edit tags"><IconButton size="small" onClick={handleTagsEdit} color="success"><LabelIcon fontSize="small" /></IconButton></Tooltip>
                 <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(memory.id)} color="error"><DeleteIcon fontSize="small" /></IconButton></Tooltip>
               </>
+            ) : (
+              <Tooltip title="Read-only: this memory belongs to another workspace or the shared space">
+                <Chip label="read-only" size="small" variant="outlined" sx={{ fontSize: 10 }} />
+              </Tooltip>
             )}
           </Box>
         </Box>

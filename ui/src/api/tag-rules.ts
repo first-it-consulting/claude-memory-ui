@@ -1,13 +1,9 @@
+import { request } from './http'
+
 export interface TagRule {
   tag: string
   keywords: string[]
   source: string
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return res.json()
 }
 
 export const tagRulesApi = {

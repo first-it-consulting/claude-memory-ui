@@ -6,6 +6,9 @@ import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import { api, Stats as StatsType } from '../api/memories'
+import ScopeSelect from '../components/ScopeSelect'
+import { useScope } from '../ScopeContext'
+import { useWhoami } from '../useWhoami'
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '—'
@@ -67,9 +70,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function Stats() {
+  const { params: scopeParams } = useScope()
+  const { isAdmin } = useWhoami()
   const { data: stats, isLoading, isError } = useQuery<StatsType>({
-    queryKey: ['stats'],
-    queryFn: api.stats,
+    queryKey: ['stats', scopeParams],
+    queryFn: () => api.stats(scopeParams),
     refetchInterval: 60_000,
   })
 
@@ -93,7 +98,10 @@ export default function Stats() {
 
   return (
     <Box sx={{ maxWidth: 1000, mx: 'auto', px: 2, py: 3 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>Statistics</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, flex: 1 }}>Statistics</Typography>
+        {isAdmin && <ScopeSelect />}
+      </Box>
       <Divider sx={{ mb: 3 }} />
 
       {/* Summary row */}
