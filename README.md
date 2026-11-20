@@ -9,7 +9,8 @@ The app is a **React + Vite TypeScript single-page application** served as stati
 ## Features
 
 - **Keycloak login** — the SPA signs users in via Keycloak (authorization code + PKCE); every API call carries the user's access token and the backend scopes it to their workspace.
-- **Multi-tenancy** — each user sees their own memories/sessions plus the admin-published shared space; admins get a workspace scope selector (mine / one tenant / all), the Jobs tab, and a **Users** page for workspace + API-token management.
+- **Multi-tenancy** — each user sees their own memories/sessions plus the admin-published shared space; admins get a workspace scope selector (mine / one tenant / all), the Jobs tab, a **Users** page for workspace management and a **Tokens** page that lists every user's API tokens (masked) for revocation.
+- **My tokens** — every user mints, lists and revokes their own API tokens (name, expiry 30/90/365 days, optional default harness; admins can opt a token into admin rights). The secret is shown once, the reveal dialog only closes via its button, and nothing is kept in browser storage. Revoking the shared `legacy-hooks` token needs a typed confirmation because it stops every unmigrated device.
 - **Memories** — list, search, filter by category/agent, edit content and tags, delete.
 - **Stats** — aggregate views (total memories, by agent, category and tag) with a visual stats bar.
 - **Jobs** — inspect past dedup job runs returned by claude-memory's `/api/jobs` (admin).
