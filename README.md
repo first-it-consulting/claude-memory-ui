@@ -1,5 +1,7 @@
 # claude-memory-ui
 
+[![CI](https://github.com/first-it-consulting/claude-memory-ui/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/first-it-consulting/claude-memory-ui/actions/workflows/ci.yml)
+
 A small web UI for **[claude-memory](https://github.com/first-it-consulting/claude-memory)** — the MCP memory server for AI agents. It lets you browse, search and edit stored memories, inspect usage stats, review dedup job runs, and manage auto-tagging rules from a browser.
 
 The app is a **React + Vite TypeScript single-page application** served as static files by a lightweight **FastAPI proxy**. The proxy also transparently forwards `/api/*` requests (with bearer auth) to the claude-memory backend.
@@ -142,6 +144,13 @@ for the full reference (`GET /api/memories`, `POST/PUT/PATCH/DELETE /api/memorie
 
 - **[claude-memory](https://github.com/first-it-consulting/claude-memory)** — the MCP memory server this UI talks to.
 - **[containers-images](https://github.com/first-it-consulting/containers-images)** — the monorepo claude-memory-ui was originally part of (now extracted).
+
+---
+
+## Contributing and security
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Please report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ---
 
