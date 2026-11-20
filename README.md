@@ -74,8 +74,8 @@ The dev server (`vite`) in `ui/vite.config.ts` proxies `/api` → `http://localh
 docker buildx bake -f docker-bake.hcl image-local
 
 # Multi-platform (amd64 + arm64) to a registry
-docker buildx bake -f docker-bake.hcl image-all --push \
-  --set "*.tags=registry.example.internal/first-it-consulting/claude-memory-ui:rolling"
+# REGISTRY defaults to ghcr.io/first-it-consulting; override to publish elsewhere
+REGISTRY=ghcr.io/<you> docker buildx bake -f docker-bake.hcl image-all --push
 ```
 
 ### Run the container
@@ -147,5 +147,4 @@ for the full reference (`GET /api/memories`, `POST/PUT/PATCH/DELETE /api/memorie
 
 ## License
 
-Licensed under the Apache License, Version 2.0 — see [LICENSE](LICENSE). Image registry:
-`registry.example.internal/first-it-consulting/claude-memory-ui`.
+Licensed under the Apache License, Version 2.0 — see [LICENSE](LICENSE).

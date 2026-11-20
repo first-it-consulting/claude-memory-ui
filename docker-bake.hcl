@@ -4,6 +4,12 @@ variable "VERSION" {
   default = "0.1.0"
 }
 
+# Registry prefix for the published tags. Override for other registries:
+#   REGISTRY=ghcr.io/<you> docker buildx bake ...
+variable "REGISTRY" {
+  default = "ghcr.io/first-it-consulting"
+}
+
 group "default" {
   targets = ["image-local"]
 }
@@ -14,8 +20,8 @@ target "image" {
     VERSION = "${VERSION}"
   }
   tags = [
-    "registry.example.internal/first-it-consulting/claude-memory-ui:${VERSION}",
-    "registry.example.internal/first-it-consulting/claude-memory-ui:rolling",
+    "${REGISTRY}/claude-memory-ui:${VERSION}",
+    "${REGISTRY}/claude-memory-ui:rolling",
   ]
   labels = {
     "org.opencontainers.image.source" = "https://github.com/first-it-consulting/claude-memory-ui"
