@@ -188,8 +188,10 @@ export default function Tokens() {
 
       {/* One-time reveal — the value lives in state only until closed.
           Esc and backdrop clicks must not destroy it: only the button does. */}
-      <Dialog open={!!issued} disableEscapeKeyDown
-              onClose={(e) => { if (e.type !== 'click') closeReveal() }}
+      <Dialog open={!!issued}
+              onClose={() => { /* MUI v9 dropped disableEscapeKeyDown: swallow
+                escapeKeyDown and backdropClick here — only the button below
+                closes, so a stray key or click never destroys the plaintext */ }}
               fullWidth maxWidth="sm">
         <DialogTitle>Token created</DialogTitle>
         <DialogContent>
