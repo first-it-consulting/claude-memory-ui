@@ -1,0 +1,17 @@
+title = "gitleaks: allow fake fixtures, catch real secrets"
+
+[allowlist]
+description = "deterministic fakes used by tests, CI and docs (never real secrets)"
+regexes = [
+  '''smoke-[a-z-]+''',
+  '''ci-interpolation-only''',
+  '''qs-[a-z0-9-]+''',
+  '''change-me''',
+  '''<your-personal-token>''',
+  '''<your-token>''',
+  '''cm_[a-z0-9]+_[a-z0-9]+''',
+]
+paths = [
+  '''\.env\.example''',
+  '''adapters/env\.example''',
+]
