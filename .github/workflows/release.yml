@@ -1,0 +1,26 @@
+name: Release
+
+# release-please keeps a release PR up to date from conventional commits.
+# Merging that PR creates the vX.Y.Z tag and the GitHub release. Image
+# publishing is a separate, not-yet-enabled step.
+# Known limitation (mirrors harness-control-center): PRs created with
+# GITHUB_TOKEN do not trigger workflows, so CI checks never run on the
+# release PR itself - review it manually before merging.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
