@@ -29,7 +29,7 @@ import Typography from '@mui/material/Typography'
 import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
-import { tokensApi, TokenRow, CreateTokenResult } from '../api/tokens'
+import { tokensApi, type TokenRow, type CreateTokenResult } from '../api/tokens'
 import { TokenNameCell, TokenStatusChip, fmtDate } from '../components/TokenBits'
 import { useWhoami } from '../useWhoami'
 

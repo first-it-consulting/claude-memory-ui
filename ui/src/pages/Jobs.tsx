@@ -17,7 +17,7 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { JobRun, jobsApi } from '../api/jobs'
+import { type JobRun, jobsApi } from '../api/jobs'
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '—'
@@ -34,6 +34,7 @@ function fmtDuration(secs: number | null): string {
 
 function StatusChip({ status }: { status: JobRun['status'] }) {
   const color = status === 'completed' ? 'success' : status === 'failed' ? 'error' : 'warning'
+  // biome-ignore lint/suspicious/noExplicitAny: MUI chip palette union is wider than the literal set we pass
   return <Chip label={status} size="small" color={color as any} variant="outlined" sx={{ fontSize: 11 }} />
 }
 
@@ -86,6 +87,7 @@ export default function Jobs() {
       </Box>
 
       {promotionMode && (
+        // biome-ignore lint/style/noNonNullAssertion: promotionMode is only true once a promotion run exists (server contract for this endpoint)
         <Tooltip title={`From the latest checkpoint-promotion run (${fmtDate(lastPromotion!.started_at)}). Set via PROMOTE_MODE in the dedup CronJob.`}>
           <Chip
             size="small"

@@ -28,7 +28,7 @@ import Typography from '@mui/material/Typography'
 import CloseIcon from '@mui/icons-material/Close'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
-import { Session, goalOf, sessionsApi } from '../api/sessions'
+import { type Session, goalOf, sessionsApi } from '../api/sessions'
 import ScopeSelect from '../components/ScopeSelect'
 import { useScope } from '../ScopeContext'
 import { useWhoami } from '../useWhoami'
@@ -49,7 +49,7 @@ function fmtDate(iso: string): string {
 
 function fmtAgo(iso: string): string {
   const secs = (Date.now() - new Date(iso).getTime()) / 1000
-  if (!isFinite(secs)) return ''
+  if (!Number.isFinite(secs)) return ''
   if (secs < 90) return 'just now'
   if (secs < 3600) return `${Math.round(secs / 60)} min ago`
   if (secs < 86400) return `${Math.round(secs / 3600)} h ago`

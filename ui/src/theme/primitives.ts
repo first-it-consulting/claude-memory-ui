@@ -1,4 +1,4 @@
-import { createTheme, alpha, Shadows } from '@mui/material/styles'
+import { createTheme, alpha, type Shadows } from '@mui/material/styles'
 
 const defaultTheme = createTheme()
 
@@ -62,7 +62,7 @@ export const typography = {
 
 export const shape = { borderRadius: 8 }
 
-// @ts-ignore
+// @ts-expect-error
 export const shadows: Shadows = [
   'none',
   'var(--template-palette-baseShadow)',

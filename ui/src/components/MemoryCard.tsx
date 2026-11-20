@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/EditOutlined'
 import LabelIcon from '@mui/icons-material/LabelOutlined'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
-import { Memory } from '../api/memories'
+import type { Memory } from '../api/memories'
 
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { authApi, Whoami } from './api/auth'
+import { authApi, type Whoami } from './api/auth'
 
 /** Identity of the signed-in user (drives admin UI + edit permissions). */
 export function useWhoami() {

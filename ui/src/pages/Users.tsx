@@ -29,7 +29,7 @@ import AddIcon from '@mui/icons-material/Add'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 import RefreshIcon from '@mui/icons-material/Refresh'
-import { usersApi, User } from '../api/users'
+import { usersApi, type User } from '../api/users'
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '—'

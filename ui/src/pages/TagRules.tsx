@@ -10,16 +10,16 @@ import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
-import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import AddIcon from '@mui/icons-material/Add'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import { tagRulesApi, TagRule } from '../api/tag-rules'
+import { tagRulesApi, type TagRule } from '../api/tag-rules'
 import { useWhoami } from '../useWhoami'
 
 function SourceBadge({ source }: { source: string }) {
   const color = source === 'manual' ? 'primary' : source === 'seed' ? 'default' : 'warning'
+  // biome-ignore lint/suspicious/noExplicitAny: MUI chip palette union is wider than the literal set we pass
   return <Chip label={source} size="small" color={color as any} variant="outlined" sx={{ fontSize: 10, height: 18 }} />
 }
 

@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import Typography from '@mui/material/Typography'
-import { Stats } from '../api/memories'
+import type { Stats } from '../api/memories'
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '—'

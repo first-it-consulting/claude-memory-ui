@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { statusOf, TokenRow } from './tokens'
+import { statusOf, type TokenRow } from './tokens'
 
 const NOW = '2026-01-15T12:00:00Z'
 

@@ -59,7 +59,7 @@ export const tokensApi = {
     request(`/api/me/tokens/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 
   adminList: (user?: string): Promise<{ tokens: TokenRow[] }> =>
-    request('/api/admin/tokens' + (user ? `?user=${encodeURIComponent(user)}` : '')),
+    request(`/api/admin/tokens${user ? `?user=${encodeURIComponent(user)}` : ''}`),
 
   adminRevoke: (id: string): Promise<{ ok: boolean }> =>
     request(`/api/admin/tokens/${encodeURIComponent(id)}`, { method: 'DELETE' }),

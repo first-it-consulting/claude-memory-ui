@@ -16,7 +16,7 @@ import {
   useMemo,
   useRef,
   useState,
-  ReactNode,
+  type ReactNode,
 } from 'react'
 import { useWhoami } from './useWhoami'
 

@@ -1,6 +1,6 @@
 // Shared display bits for the token pages (self-service + admin).
 import Chip from '@mui/material/Chip'
-import { statusOf, TokenRow } from '../api/tokens'
+import { statusOf, type TokenRow } from '../api/tokens'
 
 export function fmtDate(iso: string | null): string {
   if (!iso) return '—'
