@@ -14,7 +14,7 @@
       matchUpdateTypes: ['minor', 'patch'],
       automerge: true,
       automergeType: 'pr',
-      requiredStatusChecks: ['all'],
+      ignoreTests: false,
     },
     {
       description: 'Never automerge major updates - review them by hand',
