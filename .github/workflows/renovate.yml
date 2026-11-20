@@ -1,9 +1,11 @@
 name: renovate
 
 on:
-  schedule:
-    # every 6 hours
-    - cron: "0 */6 * * *"
+  # Cron parked: re-enable once RENOVATE_TOKEN has Issues read+write
+  # (bean claude-memory-hi07). Until then dispatch manually.
+  # schedule:
+  #   # every 6 hours
+  #   - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       logLevel:
