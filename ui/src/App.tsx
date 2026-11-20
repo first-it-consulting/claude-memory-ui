@@ -126,7 +126,17 @@ function Shell() {
     <>
       <AppBar position="sticky" elevation={0}>
         <Toolbar variant="dense" sx={{ gap: 2, alignItems: 'center' }}>
-          <Box component="img" src="/logo-dark.png" alt="Remnant" sx={{ height: 28, width: 'auto', flexShrink: 0 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+            <Box
+              component="img"
+              src="/logo-icon.png"
+              alt="claude-memory logo"
+              sx={{ height: 28, width: 28, borderRadius: 1.5, flexShrink: 0 }}
+            />
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+              claude-memory
+            </Typography>
+          </Box>
           <Tabs
             value={page}
             onChange={(_, v) => setPage(v as Page)}

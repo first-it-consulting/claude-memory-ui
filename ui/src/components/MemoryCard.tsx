@@ -187,7 +187,7 @@ export default function MemoryCard({ memory, canEdit, showTenant, sharedTenant, 
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleTagKeyDown}
                     onBlur={() => { if (tagInput.trim()) addTag(tagInput) }}
-                    placeholder={draftTags.length === 0 ? 'prod-k8s, remnant, upgrade…' : 'add tag…'}
+                    placeholder={draftTags.length === 0 ? 'prod-k8s, claude-memory, upgrade…' : 'add tag…'}
                     sx={{ fontSize: 12, flex: 1, minWidth: 80 }}
                   />
                 </Box>
