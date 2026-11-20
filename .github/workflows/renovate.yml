@@ -1,11 +1,11 @@
 name: renovate
 
 on:
-  # Cron parked: re-enable once RENOVATE_TOKEN has Issues read+write
-  # (bean claude-memory-hi07). Until then dispatch manually.
-  # schedule:
-  #   # every 6 hours
-  #   - cron: "0 */6 * * *"
+  schedule:
+    # Daily while the repo is private (Actions minutes are metered on the
+    # free plan). Restoring the 6h cadence after the public flip is a
+    # decision tracked in bean claude-memory-a7lc.
+    - cron: "17 4 * * *"
   workflow_dispatch:
     inputs:
       logLevel:
