@@ -9,6 +9,10 @@ RUN npm run build
 # Stage 2 — Python proxy + static file server
 FROM python:3.15-slim
 
+# Set by docker buildx (bake / publish workflow) from the release tag.
+ARG VERSION=dev
+LABEL org.opencontainers.image.version="${VERSION}"
+
 # Refresh Debian packages: the slim base digest can lag security uploads
 # (e.g. zlib1g CVEs); keeps the Trivy CRITICAL gate meaningful.
 RUN apt-get update \

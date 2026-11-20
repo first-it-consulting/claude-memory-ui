@@ -1,10 +1,14 @@
 name: publish
 
-# PR / workflow_dispatch = dry run: build (linux/amd64 only) + scan + SBOM,
-# nothing is pushed. Only v*.*.* tags (created by release-please, whose
-# release PRs are merged by a human after the history rewrite) run the
-# publish job. Registry + token policy per bean 0op6: GHCR via the built-in
-# GITHUB_TOKEN - no personal access token anywhere.
+# The build job runs on EVERY trigger (PR, dispatch, release tag): build +
+# Trivy CRITICAL gate + SBOM, on one fast architecture. On a release tag it
+# acts as the pre-push gate - the publish job needs it, so a vulnerable
+# image can never reach the registry.
+# Publish (tags only, human-merged release PRs after the history rewrite):
+# push vX.Y.Z, rescan the pushed digest, and only then move :rolling.
+# Registry + token policy per bean 0op6: GHCR via the built-in GITHUB_TOKEN
+# - no personal access token anywhere. Buildkit provenance/SBOM attestations
+# are image-attached and need only packages: write.
 
 on:
   push:
@@ -23,9 +27,8 @@ env:
   IMAGE: ghcr.io/first-it-consulting/claude-memory-ui
 
 jobs:
-  # Dry run: everything except pushing, on one fast architecture.
+  # Build + gate. Never pushes; on tags this must pass before publish starts.
   build:
-    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -72,17 +75,17 @@ jobs:
             sbom.cdx.json
           if-no-files-found: warn
 
-  # Real publish: release tags only. Multi-arch push to GHCR with buildkit
-  # provenance + SBOM attestations, then scan the pushed digest by digest.
+  # Release tags only, after the build gate passed. Push the version tag,
+  # rescan what actually landed in the registry, move :rolling only at the
+  # very end so it never points at an image that failed a check.
   publish:
+    needs: build
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
       contents: read
       packages: write
-      id-token: write
-      attestations: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
@@ -92,7 +95,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push multi-arch with provenance + SBOM attestations
+      - name: Push version tag, multi-arch, with provenance + SBOM attestations
         id: build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
@@ -101,9 +104,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           provenance: mode=max
           sbom: true
-          tags: |
-            ${{ env.IMAGE }}:${{ github.ref_name }}
-            ${{ env.IMAGE }}:rolling
+          tags: ${{ env.IMAGE }}:${{ github.ref_name }}
           build-args: |
             VERSION=${{ github.ref_name }}
           cache-from: type=gha
@@ -126,6 +127,10 @@ jobs:
           severity: HIGH
           exit-code: "0"
           format: table
+      - name: Move rolling tag (only after every check passed)
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: docker buildx imagetools create -t "${IMAGE}:rolling" "${IMAGE}@${DIGEST}"
       - name: Digest summary
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
@@ -134,4 +139,5 @@ jobs:
             echo "## Image digest"
             echo "- image: \`${IMAGE}:${GITHUB_REF_NAME}\`"
             echo "- digest: \`${DIGEST}\`"
+            echo "- :rolling moved to this digest"
           } >> "$GITHUB_STEP_SUMMARY"
