@@ -1,8 +1,13 @@
-title = "gitleaks: catch real claude-memory tokens, allow narrow fakes"
+title = "gitleaks: built-in rules + claude-memory token shape"
+
+# Without [extend] a custom config REPLACES the built-in ruleset - generic
+# secrets (GitHub PATs, cloud keys, private keys, JWTs...) would go unscanned.
+[extend]
+useDefault = true
 
 # Real personal tokens are cm_t<8hex>_<long url-safe secret>. Anything of that
-# shape OUTSIDE the allowlisted fixture files below is a leak - including in
-# tests, which must keep using obviously-fake short variants.
+# shape anywhere in the repo is a leak - tests must use obviously-fake short
+# variants that stay below the 20-char secret threshold.
 [[rules]]
 id = "claude-memory-personal-token"
 description = "claude-memory personal API token shape (cm_t + 8 hex + 20+ url-safe chars)"
@@ -10,7 +15,7 @@ regex = '''\bcm_t[0-9a-f]{8}_[A-Za-z0-9_-]{20,}'''
 keywords = ["cm_t"]
 
 [allowlist]
-description = "test fixtures that intentionally hold fake tokens (short fakes only - the custom rule above still fires on real-shape strings here)"
+description = "test fixtures that intentionally hold fake tokens"
 paths = [
   '''(^|/)tests/test_api_tokens\.py$''',
   '''(^|/)tests/test_units\.py$''',
