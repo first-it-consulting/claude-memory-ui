@@ -22,8 +22,10 @@ import TagRules from './pages/TagRules'
 import Jobs from './pages/Jobs'
 import Sessions from './pages/Sessions'
 import Users from './pages/Users'
+import Tokens from './pages/Tokens'
+import AdminTokens from './pages/AdminTokens'
 
-type Page = 'memories' | 'sessions' | 'stats' | 'rules' | 'jobs' | 'users'
+type Page = 'memories' | 'sessions' | 'stats' | 'rules' | 'tokens' | 'jobs' | 'users' | 'admin-tokens'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 10_000 } },
@@ -135,9 +137,19 @@ function Shell() {
             <Tab label="Sessions" value="sessions" />
             <Tab label="Stats" value="stats" />
             <Tab label="Tag Rules" value="rules" />
+            <Tab label="My tokens" value="tokens" />
             {isAdmin && <Tab label="Jobs" value="jobs" />}
             {isAdmin && <Tab label="Users" value="users" />}
+            {isAdmin && <Tab label="Tokens" value="admin-tokens" />}
           </Tabs>
+          {me?.token_expiring_soon && (
+            <Chip
+              size="small"
+              color="warning"
+              variant="outlined"
+              label={<Typography variant="caption">API token expires in {me.token_expires_in_days}d</Typography>}
+            />
+          )}
           {me && (
             <Chip
               size="small"
@@ -156,8 +168,10 @@ function Shell() {
         {page === 'sessions' && <Sessions />}
         {page === 'stats' && <Stats />}
         {page === 'rules' && <TagRules />}
+        {page === 'tokens' && <Tokens />}
         {page === 'jobs' && isAdmin && <Jobs />}
         {page === 'users' && isAdmin && <Users />}
+        {page === 'admin-tokens' && isAdmin && <AdminTokens />}
       </Box>
     </>
   )

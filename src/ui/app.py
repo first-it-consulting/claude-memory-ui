@@ -81,7 +81,10 @@ async def proxy(path: str, request: Request) -> Response:
         content=resp.content,
         status_code=resp.status_code,
         headers={"content-type": resp.headers.get("content-type", "application/json"),
-                 "content-disposition": resp.headers.get("content-disposition", "")},
+                 "content-disposition": resp.headers.get("content-disposition", ""),
+                 # Token create/list responses carry a one-time plaintext —
+                 # nothing under /api may sit in a browser or proxy cache.
+                 "cache-control": "no-store"},
     )
 
 
