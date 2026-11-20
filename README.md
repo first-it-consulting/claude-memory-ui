@@ -147,5 +147,5 @@ for the full reference (`GET /api/memories`, `POST/PUT/PATCH/DELETE /api/memorie
 
 ## License
 
-Internal-use project. Image registry:
+Licensed under the Apache License, Version 2.0 — see [LICENSE](LICENSE). Image registry:
 `registry.example.internal/first-it-consulting/claude-memory-ui`.
