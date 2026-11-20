@@ -31,6 +31,7 @@ export default function AdminTokens() {
   const qc = useQueryClient()
   const [userFilter, setUserFilter] = useState('')
   const [revokeTarget, setRevokeTarget] = useState<TokenRow | null>(null)
+  const [confirmText, setConfirmText] = useState('')
 
   const { data: users = [] } = useQuery({ queryKey: ['users'], queryFn: usersApi.list })
 
@@ -117,19 +118,41 @@ export default function AdminTokens() {
         </TableContainer>
       )}
 
-      {/* Revoke confirm */}
-      <Dialog open={!!revokeTarget} onClose={() => setRevokeTarget(null)} maxWidth="xs" fullWidth>
+      {/* Revoke confirm — legacy-hooks is the shared fleet token: killing it
+          takes every remaining hook down at once, so require typed consent. */}
+      <Dialog open={!!revokeTarget} maxWidth="xs" fullWidth
+              onClose={() => { setRevokeTarget(null); setConfirmText('') }}>
         <DialogTitle>Revoke {revokeTarget?.user_id}’s “{revokeTarget?.name}”?</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary">
-            Any agent using <code>{revokeTarget?.display}</code> stops working
-            immediately. This cannot be undone.
-          </Typography>
+          {revokeTarget?.name === 'legacy-hooks' ? (
+            <>
+              <Typography variant="body2" sx={{ mb: 1.5 }}>
+                <b>Blast radius: every remaining client.</b> This is the shared
+                legacy token used by all not-yet-migrated hooks and MCP devices
+                — revoking it stops them all immediately, and old configs keep
+                failing until each device gets its own token. Migrate devices
+                first (see docs/token-migration.md in the server repo).
+              </Typography>
+              <TextField size="small" fullWidth label="Type revoke-all-hooks to confirm"
+                value={confirmText} onChange={e => setConfirmText(e.target.value)}
+                slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }} />
+            </>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Any agent using <code>{revokeTarget?.display}</code> stops working
+              immediately. This cannot be undone.
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRevokeTarget(null)}>Cancel</Button>
-          <Button variant="contained" color="error" disabled={revokeMutation.isPending}
-            onClick={() => revokeTarget && revokeMutation.mutate(revokeTarget.id)}>
+          <Button onClick={() => { setRevokeTarget(null); setConfirmText('') }}>Cancel</Button>
+          <Button variant="contained" color="error"
+            disabled={revokeMutation.isPending
+              || (revokeTarget?.name === 'legacy-hooks' && confirmText !== 'revoke-all-hooks')}
+            onClick={() => {
+              if (revokeTarget) revokeMutation.mutate(revokeTarget.id)
+              setConfirmText('')
+            }}>
             Revoke
           </Button>
         </DialogActions>
