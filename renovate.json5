@@ -1,0 +1,25 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+  ],
+  packageRules: [
+    {
+      description: 'Group minor and patch updates (npm + Actions) into one PR',
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'minor and patch updates',
+    },
+    {
+      description: 'Automerge the grouped minor/patch PR only when all checks pass',
+      matchUpdateTypes: ['minor', 'patch'],
+      automerge: true,
+      automergeType: 'pr',
+      requiredStatusChecks: ['all'],
+    },
+    {
+      description: 'Never automerge major updates - review them by hand',
+      matchUpdateTypes: ['major'],
+      automerge: false,
+    },
+  ],
+}
