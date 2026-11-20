@@ -7,7 +7,7 @@ set -uo pipefail
 BASE=http://localhost:8081
 
 ok() { echo "PASS: $1"; }
-die() { echo "FAIL: $1 (${2:-})"; docker logs ui 2>&1 | tail -15; docker logs stub401 2>&1 | tail -5; exit 1; }
+die() { echo "FAIL: $1 (${2:-})"; docker logs ui 2>&1 | tail -15; docker logs ui2 2>&1 | tail -15; docker logs stub401 2>&1 | tail -5; exit 1; }
 
 for _ in $(seq 1 30); do
   curl -sS -m 5 "$BASE/health" 2>/dev/null | grep -q '"status":"ok"' && break
@@ -27,5 +27,18 @@ ok "GET / serves the built SPA"
 CODE=$(curl -sS -m 10 -o /dev/null -w '%{http_code}' "$BASE/api/memories")
 [ "$CODE" = "401" ] || die "backend 401 must pass through" "got $CODE"
 ok "proxy forwards /api call -> backend 401 passed through"
+
+# Empty BEARER_TOKEN (legacy mode, shared token not configured): the proxy must
+# send NO Authorization header, not the illegal "Bearer " (trailing space) that
+# crashed httpx with a 500. Backend then returns a clean 401. ui2 runs with no
+# BEARER_TOKEN on :8082.
+BASE2=http://localhost:8082
+for _ in $(seq 1 30); do
+  curl -sS -m 5 "$BASE2/health" 2>/dev/null | grep -q '"status":"ok"' && break
+  sleep 2
+done
+CODE2=$(curl -sS -m 10 -o /dev/null -w '%{http_code}' "$BASE2/api/memories")
+[ "$CODE2" = "401" ] || die "empty BEARER_TOKEN must yield backend 401, not 500" "got $CODE2"
+ok "empty BEARER_TOKEN -> no illegal header -> backend 401 (no 500)"
 
 echo ALL-SMOKE-PASSED

@@ -72,11 +72,14 @@ jobs:
           docker run -d --name ui --network smoke -p 8081:8081 \
             -e MCP_INTERNAL_URL=http://stub401:8080 -e BEARER_TOKEN=smoke-proxy-token \
             claude-memory-ui:smoke
+          docker run -d --name ui2 --network smoke -p 8082:8081 \
+            -e MCP_INTERNAL_URL=http://stub401:8080 \
+            claude-memory-ui:smoke
           bash tests/smoke.sh
       - name: Collect container logs on failure
         if: failure()
         run: |
-          { docker logs ui; docker logs stub401; } > container-logs.txt 2>&1
+          { docker logs ui; docker logs ui2; docker logs stub401; } > container-logs.txt 2>&1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:

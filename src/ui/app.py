@@ -40,7 +40,10 @@ def _auth_headers(request: Request) -> dict:
     auth = request.headers.get("authorization", "")
     if OIDC_ENABLED:
         return {"Authorization": auth} if auth else {}
-    return {"Authorization": f"Bearer {BEARER_TOKEN}"}
+    # An empty BEARER_TOKEN must NOT produce "Bearer " (trailing space) - that
+    # is an illegal header value and makes httpx raise -> 500. Send no header;
+    # the backend then answers a clean 401, same as the OIDC-empty branch above.
+    return {"Authorization": f"Bearer {BEARER_TOKEN}"} if BEARER_TOKEN else {}
 
 
 @app.get("/health")
