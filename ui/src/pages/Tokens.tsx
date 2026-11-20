@@ -189,7 +189,7 @@ export default function Tokens() {
       {/* One-time reveal — the value lives in state only until closed.
           Esc and backdrop clicks must not destroy it: only the button does. */}
       <Dialog open={!!issued} disableEscapeKeyDown
-              onClose={(_, reason) => { if (reason !== 'backdropClick') closeReveal() }}
+              onClose={(e) => { if (e.type !== 'click') closeReveal() }}
               fullWidth maxWidth="sm">
         <DialogTitle>Token created</DialogTitle>
         <DialogContent>
