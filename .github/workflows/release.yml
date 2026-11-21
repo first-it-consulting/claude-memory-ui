@@ -22,8 +22,20 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      # to dispatch the publish workflow for the freshly created tag
+      actions: write
     steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+      # GITHUB_TOKEN-created tags do not trigger workflow pushes; dispatch
+      # publish explicitly. publish.yml gates dispatch on refs/tags/v*.
+      - name: Trigger publish for the created tag
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag_name }}
+        run: gh workflow run publish.yml --ref "$TAG"
+
