@@ -1,8 +1,13 @@
 # claude-memory-ui
 
 [![CI](https://github.com/first-it-consulting/claude-memory-ui/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/first-it-consulting/claude-memory-ui/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/first-it-consulting/claude-memory-ui)](https://github.com/first-it-consulting/claude-memory-ui/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![images](https://img.shields.io/badge/ghcr-linux%2Famd64%20%C2%B7%20arm64-brightgreen)](https://ghcr.io/first-it-consulting/claude-memory-ui)
 
-A small web UI for **[claude-memory](https://github.com/first-it-consulting/claude-memory)** — the MCP memory server for AI agents. It lets you browse, search and edit stored memories, inspect usage stats, review dedup job runs, and manage auto-tagging rules from a browser.
+The browser face of **[claude-memory](https://github.com/first-it-consulting/claude-memory)** — the self-hosted, multi-user memory server for AI agents. Everything about the server, the quick start and the architecture lives in the [server README](https://github.com/first-it-consulting/claude-memory#readme); this repo is only the UI.
+
+It lets you browse, search and edit stored memories, inspect usage stats, review dedup job runs, and manage auto-tagging rules from a browser.
 
 The app is a **React + Vite TypeScript single-page application** served as static files by a lightweight **FastAPI proxy**. The proxy also transparently forwards `/api/*` requests (with bearer auth) to the claude-memory backend.
 
