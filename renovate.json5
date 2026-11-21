@@ -27,11 +27,13 @@
       automerge: false,
     },
     {
-      // Runtime majors (e.g. python 3.13 -> 3.15, node 22 -> 26) are
-      // deliberate, tested upgrades - Renovate must not even propose them.
-      description: 'No Python/Node runtime MAJOR PRs at all (manual bumps only)',
+      // Runtime version pins (setup-python/setup-node, Dockerfile FROM
+      // python/node) are deliberate, tested upgrades. Renovate counts
+      // 3.13 -> 3.15 as MINOR, so disable these depNames for ALL update
+      // types. matchDepNames is exact-match, so pip/npm packages are
+      // unaffected; manual bumps only.
+      description: 'No Python/Node runtime version PRs at all (manual bumps only)',
       matchDepNames: ['python', 'node'],
-      matchUpdateTypes: ['major'],
       enabled: false,
     },
     {
