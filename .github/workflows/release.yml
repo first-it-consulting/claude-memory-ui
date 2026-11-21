@@ -17,6 +17,8 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    # manual dispatch from a non-main ref must not run privileged steps
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
       pull-requests: write
