@@ -21,6 +21,7 @@ export interface Stats {
   by_agent: Record<string, number>
   by_category: Record<string, number>
   by_tag: Record<string, number>
+  tagged?: number
 }
 
 export interface FetchParams {

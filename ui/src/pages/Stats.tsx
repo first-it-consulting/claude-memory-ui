@@ -93,8 +93,11 @@ export default function Stats() {
   const agentCount = Object.keys(stats.by_agent).length
   const categoryCount = Object.keys(stats.by_category).filter(c => c !== 'uncategorized').length
   const tagCount = Object.keys(stats.by_tag ?? {}).length
-  const taggedCount = Object.entries(stats.by_tag ?? {}).reduce((s, [, v]) => s + v, 0)
-  const untaggedCount = stats.total - taggedCount
+  // 'tagged' is the distinct count from the server (>=1 tag); summing by_tag
+  // occurrences double-counted multi-tag memories and drove 'untagged'
+  // negative. Fall back to 0 for servers that predate the field.
+  const taggedCount = stats.tagged ?? 0
+  const untaggedCount = Math.max(0, stats.total - taggedCount)
 
   return (
     <Box sx={{ maxWidth: 1000, mx: 'auto', px: 2, py: 3 }}>
