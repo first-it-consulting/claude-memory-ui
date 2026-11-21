@@ -10,6 +10,11 @@ variable "REGISTRY" {
   default = "ghcr.io/first-it-consulting"
 }
 
+# Full commit sha shown in the UI footer (git rev-parse HEAD at build time).
+variable "GIT_SHA" {
+  default = "unknown"
+}
+
 group "default" {
   targets = ["image-local"]
 }
@@ -18,6 +23,7 @@ target "image" {
   inherits = ["docker-metadata-action"]
   args = {
     VERSION = "${VERSION}"
+    GIT_SHA = "${GIT_SHA}"
   }
   tags = [
     "${REGISTRY}/claude-memory-ui:${VERSION}",

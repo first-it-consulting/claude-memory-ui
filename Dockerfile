@@ -4,6 +4,11 @@ WORKDIR /app
 COPY ui/package*.json ./
 RUN npm ci
 COPY ui/ .
+# Build identity for the footer (set by bake / publish workflow);
+# vite.config.ts falls back to package.json version when empty.
+ARG APP_VERSION=
+ARG GIT_SHA=
+ENV VITE_APP_VERSION="${APP_VERSION}" VITE_GIT_SHA="${GIT_SHA}"
 RUN npm run build
 
 # Stage 2 — Python proxy + static file server

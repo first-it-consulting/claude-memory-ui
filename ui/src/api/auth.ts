@@ -12,6 +12,12 @@ export interface Whoami {
   token_expiring_soon?: boolean
 }
 
+export interface ServerVersion {
+  version: string
+  commit: string
+}
+
 export const authApi = {
   whoami: (): Promise<Whoami> => request('/api/auth/whoami'),
+  version: (): Promise<ServerVersion> => request('/api/version'),
 }

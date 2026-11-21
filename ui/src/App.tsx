@@ -24,6 +24,7 @@ import Sessions from './pages/Sessions'
 import Users from './pages/Users'
 import Tokens from './pages/Tokens'
 import AdminTokens from './pages/AdminTokens'
+import VersionFooter from './components/VersionFooter'
 
 type Page = 'memories' | 'sessions' | 'stats' | 'rules' | 'tokens' | 'jobs' | 'users' | 'admin-tokens'
 
@@ -183,6 +184,7 @@ function Shell() {
         {page === 'users' && isAdmin && <Users />}
         {page === 'admin-tokens' && isAdmin && <AdminTokens />}
       </Box>
+      <VersionFooter />
     </>
   )
 }
