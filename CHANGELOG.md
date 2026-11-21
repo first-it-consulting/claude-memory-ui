@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.1...v0.1.2) (2026-11-21)
+
+
+### Bug Fixes
+
+* **ci:** pass -R to gh workflow run in publish trigger ([293f20b](https://github.com/first-it-consulting/claude-memory-ui/commit/293f20b347a6eb0a6b264a0eae5149f6952752e5))
+* **stats:** use server's distinct tagged count, clamp untagged at 0 ([f8bd0d2](https://github.com/first-it-consulting/claude-memory-ui/commit/f8bd0d22252a3798a8d1ae09ae966b0d3328ff93))
+
 ## [0.1.1](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.0...v0.1.1) (2026-11-21)
 
 
