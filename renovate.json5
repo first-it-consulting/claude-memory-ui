@@ -10,8 +10,8 @@
       groupName: 'minor and patch updates',
     },
     {
-      description: 'Automerge the grouped minor/patch PR only when all checks pass',
-      matchUpdateTypes: ['minor', 'patch'],
+      description: 'Automerge minor/patch/digest/pin PRs only when all checks pass',
+      matchUpdateTypes: ['minor', 'patch', 'digest', 'pin', 'pinDigest'],
       automerge: true,
       automergeType: 'pr',
       ignoreTests: false,
@@ -19,6 +19,33 @@
     {
       description: 'Never automerge major updates - review them by hand',
       matchUpdateTypes: ['major'],
+      automerge: false,
+    },
+    {
+      description: 'Never automerge Python/Node runtime updates',
+      matchDepNames: ['python', 'node'],
+      automerge: false,
+    },
+    {
+      // Runtime majors (e.g. python 3.13 -> 3.15, node 22 -> 26) are
+      // deliberate, tested upgrades - Renovate must not even propose them.
+      description: 'No Python/Node runtime MAJOR PRs at all (manual bumps only)',
+      matchDepNames: ['python', 'node'],
+      matchUpdateTypes: ['major'],
+      enabled: false,
+    },
+    {
+      // Docker base images (FROM lines, bake/compose pins) and release-please
+      // bookkeeping stay human-gated regardless of update type.
+      description: 'Never automerge Dockerfile/base-image or release-please file changes',
+      matchFileNames: [
+        '**/Dockerfile*',
+        '**/*.bake.hcl',
+        '**/docker-compose*.y*ml',
+        'release-please-config.json',
+        '.release-please-manifest.json',
+        '**/CHANGELOG.md',
+      ],
       automerge: false,
     },
   ],
