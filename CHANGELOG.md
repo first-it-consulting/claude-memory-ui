@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.0...v0.1.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* **ci:** trigger publish for release-please-created tags ([#8](https://github.com/first-it-consulting/claude-memory-ui/issues/8)) ([5b2c864](https://github.com/first-it-consulting/claude-memory-ui/commit/5b2c864b5d382deeb1c06deaccca6369e19ed464))
+* **renovate:** disable all python/node runtime PRs (manual only) ([#15](https://github.com/first-it-consulting/claude-memory-ui/issues/15)) ([13b12ed](https://github.com/first-it-consulting/claude-memory-ui/commit/13b12eddea4051cdb4d358087830dbf1e7947589))
+
 ## 0.1.0 (2026-11-21)
 
 
