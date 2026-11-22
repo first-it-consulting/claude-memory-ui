@@ -40,6 +40,10 @@ export interface FetchParams {
   /** space filter (bean o9y4): own = no shared rows, shared = only them;
    *  omitted = the default union 'own + shared' */
   space?: 'own' | 'shared'
+  /** paging (bean pj1k): with these the server answers
+   *  {memories, total} instead of a plain array */
+  limit?: number
+  offset?: number
 }
 
 function qs(params: FetchParams): string {
@@ -47,6 +51,10 @@ function qs(params: FetchParams): string {
   for (const k of ['q', 'sort', 'agent_id', 'category', 'tag', 'scope', 'tenant', 'space'] as const) {
     const v = params[k]
     if (v) qs.set(k, v)
+  }
+  for (const k of ['limit', 'offset'] as const) {
+    const v = params[k]
+    if (v !== undefined) qs.set(k, String(v))
   }
   return qs.size ? `?${qs}` : ''
 }
@@ -57,6 +65,17 @@ export const api = {
 
   list: (params: FetchParams = {}): Promise<Memory[]> =>
     request(`/api/memories${qs(params)}`),
+
+  /** paged list (bean pj1k): limit/offset make the server answer
+   *  {memories, total}; tolerant of a plain-array answer (older server,
+   *  or a mock) so a newer UI never breaks against it */
+  listPaged: async (params: FetchParams): Promise<{ memories: Memory[]; total: number }> => {
+    const raw = await request<Memory[] | { memories: Memory[]; total: number }>(
+      `/api/memories${qs(params)}`,
+    )
+    if (Array.isArray(raw)) return { memories: raw, total: raw.length }
+    return { memories: raw.memories ?? [], total: raw.total ?? 0 }
+  },
 
   add: (content: string, shared = false): Promise<{ ok: boolean }> =>
     request('/api/memories', {

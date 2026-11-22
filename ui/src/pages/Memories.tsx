@@ -1,5 +1,5 @@
 import { useCallback, useDeferredValue, useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -103,10 +103,30 @@ export default function Memories() {
     refetchInterval: 30_000,
   })
 
-  const { data: memories = [], isLoading, isError } = useQuery({
+  // Paging (bean pj1k): 50 per request, "Load more" walks the pages. The
+  // server total counts the FULL filtered set — but note the search path
+  // is capped at 200 server-side, so with a query "of TOTAL" is capped
+  // there too; the Load-more button simply disappears at that total.
+  const PAGE_SIZE = 50
+  const {
+    data: pageData,
+    isLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
     queryKey: ['memories', fetchParams],
-    queryFn: () => api.list(fetchParams),
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      api.listPaged({ ...fetchParams, limit: PAGE_SIZE, offset: pageParam }),
+    getNextPageParam: (last, all) => {
+      const seen = all.reduce((n, p) => n + p.memories.length, 0)
+      return seen < last.total ? seen : undefined
+    },
   })
+  const memories = pageData?.pages.flatMap((p) => p.memories) ?? []
+  const total = pageData?.pages[0]?.total ?? 0
 
   const agents = stats ? Object.keys(stats.by_agent).sort() : []
   const categories = stats ? Object.keys(stats.by_category).filter(c => c !== 'uncategorized').sort() : []
@@ -305,7 +325,9 @@ export default function Memories() {
 
       {/* Results header */}
       <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-        {isLoading ? 'Loading…' : `${memories.length.toLocaleString()} ${search ? 'results' : 'memories'}`}
+        {isLoading
+          ? 'Loading…'
+          : `${memories.length.toLocaleString()} of ${total.toLocaleString()} ${search ? 'results' : 'memories'}`}
       </Typography>
 
       {/* Content */}
@@ -338,6 +360,18 @@ export default function Memories() {
             <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
               {search ? `No results for "${search}"` : 'No memories yet.'}
             </Typography>
+          )}
+          {hasNextPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                disabled={isFetchingNextPage}
+                onClick={() => void fetchNextPage()}
+              >
+                {isFetchingNextPage ? 'Loading…' : 'Load more'}
+              </Button>
+            </Box>
           )}
         </Stack>
       )}
