@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.2...v0.1.3) (2026-11-22)
+
+
+### Features
+
+* **memories:** admin Share-to-all button with confirm and toast ([83ddef6](https://github.com/first-it-consulting/claude-memory-ui/commit/83ddef6d9d903a579db2addea138a12c2bd642ab))
+
 ## [0.1.2](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.1...v0.1.2) (2026-11-21)
 
 
