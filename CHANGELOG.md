@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.3...v0.1.4) (2026-11-22)
+
+
+### Features
+
+* **memories:** All / Mine / Shared space filter for every user ([1cf8475](https://github.com/first-it-consulting/claude-memory-ui/commit/1cf8475a040528e4b15b7a507a4d76c5cbc97b27))
+
 ## [0.1.3](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.2...v0.1.3) (2026-11-22)
 
 
