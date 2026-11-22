@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.4...v0.1.5) (2026-11-22)
+
+
+### Features
+
+* **ui:** share proposals - propose button, chips, admin tab (wifw) ([892bf63](https://github.com/first-it-consulting/claude-memory-ui/commit/892bf633186f3c734a1072063160619582a4b15f))
+
 ## [0.1.4](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.3...v0.1.4) (2026-11-22)
 
 
