@@ -75,5 +75,11 @@ export const api = {
   delete: (id: string): Promise<{ ok: boolean }> =>
     request(`/api/memories/${id}`, { method: 'DELETE' }),
 
+  /** Admin-only MOVE of an existing memory into the shared space, keeping
+   *  its id (server bean vd3y). Idempotent: already_shared=true on a
+   *  second call. 403 non-admin, 404 unknown id, 503 store unreachable. */
+  share: (id: string): Promise<{ ok: boolean; shared: boolean; already_shared: boolean }> =>
+    request(`/api/memories/${id}/share`, { method: 'PATCH' }),
+
   exportPath: (params: FetchParams = {}): string => `/api/memories/export${qs(params)}`,
 }

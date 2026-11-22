@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip'
 import DeleteIcon from '@mui/icons-material/DeleteOutlined'
 import EditIcon from '@mui/icons-material/EditOutlined'
 import LabelIcon from '@mui/icons-material/LabelOutlined'
+import ShareIcon from '@mui/icons-material/ShareOutlined'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import type { Memory } from '../api/memories'
@@ -25,15 +26,19 @@ interface Props {
   /** false for memories the caller may not modify (another workspace's, or
    *  the shared space for non-admins) — the server enforces this too */
   canEdit: boolean
+  /** admin only: offer 'Share to all' on memories not yet in the shared
+   *  space (server bean vd3y — the move keeps the id) */
+  canShare?: boolean
   /** show the owning workspace chip (admin scope / shared entries) */
   showTenant?: boolean
   sharedTenant?: string
   onDelete: (id: string) => void
   onUpdate: (id: string, content: string) => void
   onUpdateTags: (id: string, tags: string[]) => void
+  onShare: (id: string) => void
 }
 
-export default function MemoryCard({ memory, canEdit, showTenant, sharedTenant, onDelete, onUpdate, onUpdateTags }: Props) {
+export default function MemoryCard({ memory, canEdit, canShare, showTenant, sharedTenant, onDelete, onUpdate, onUpdateTags, onShare }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(memory.memory)
 
@@ -211,6 +216,11 @@ export default function MemoryCard({ memory, canEdit, showTenant, sharedTenant, 
               <>
                 <Tooltip title="Edit content"><IconButton size="small" onClick={() => setEditing(true)}><EditIcon fontSize="small" /></IconButton></Tooltip>
                 <Tooltip title="Edit tags"><IconButton size="small" onClick={handleTagsEdit} color="success"><LabelIcon fontSize="small" /></IconButton></Tooltip>
+                {canShare && (
+                  <Tooltip title="Share to all — move this memory into the shared space (every workspace can read it)">
+                    <IconButton size="small" onClick={() => onShare(memory.id)} color="primary"><ShareIcon fontSize="small" /></IconButton>
+                  </Tooltip>
+                )}
                 <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(memory.id)} color="error"><DeleteIcon fontSize="small" /></IconButton></Tooltip>
               </>
             ) : (
