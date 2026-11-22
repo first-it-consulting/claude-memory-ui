@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.5...v0.1.6) (2026-11-22)
+
+
+### Features
+
+* paginate the Memories page with Load more (pj1k) ([48148a8](https://github.com/first-it-consulting/claude-memory-ui/commit/48148a821faf1ddfb52775535cacc9a14f1b56c5))
+
 ## [0.1.5](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.4...v0.1.5) (2026-11-22)
 
 
