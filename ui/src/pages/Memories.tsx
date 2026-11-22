@@ -30,6 +30,7 @@ import DownloadIcon from '@mui/icons-material/Download'
 import SearchIcon from '@mui/icons-material/Search'
 import { api, type FetchParams } from '../api/memories'
 import { download } from '../api/http'
+import { proposalsApi } from '../api/proposals'
 import MemoryCard from '../components/MemoryCard'
 import StatsBar from '../components/StatsBar'
 import ScopeSelect from '../components/ScopeSelect'
@@ -71,6 +72,8 @@ export default function Memories() {
   // admin share flow (bean vd3y): card button -> confirm dialog -> PATCH
   const [toShare, setToShare] = useState<(typeof memories)[number] | null>(null)
   const [shareError, setShareError] = useState('')
+  // owner proposal flow (bean oi38): propose / withdraw, errors as snackbar
+  const [proposalError, setProposalError] = useState('')
   const [space, setSpaceState] = useState<Space>(loadSpace)
   const setSpace = (s: Space) => {
     setSpaceState(s)
@@ -133,6 +136,18 @@ export default function Memories() {
     onSuccess: invalidate,
   })
 
+  const proposeMutation = useMutation({
+    mutationFn: (id: string) => proposalsApi.propose(id),
+    onSuccess: invalidate,
+    onError: (e: Error) => setProposalError(`Propose failed: ${e.message}`),
+  })
+
+  const withdrawMutation = useMutation({
+    mutationFn: (id: string) => proposalsApi.withdraw(id),
+    onSuccess: invalidate,
+    onError: (e: Error) => setProposalError(`Withdraw failed: ${e.message}`),
+  })
+
   const shareMutation = useMutation({
     mutationFn: (id: string) => api.share(id),
     onSuccess: () => { setToShare(null); invalidate() },
@@ -149,6 +164,10 @@ export default function Memories() {
   // would be a no-op there; the server answers already_shared)
   const canShare = (m: (typeof memories)[number]) =>
     isAdmin && m.tenant !== sharedTenant
+  // owners propose their own workspace memories (never the shared space);
+  // the server treats foreign proposes as 404 anyway
+  const canPropose = (m: (typeof memories)[number]) =>
+    !!me && m.tenant === me.user_id && m.tenant !== sharedTenant
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: 2, py: 3 }}>
@@ -304,6 +323,9 @@ export default function Memories() {
               memory={m}
               canEdit={canEdit(m)}
               canShare={canShare(m)}
+              canPropose={canPropose(m)}
+              onPropose={(id) => proposeMutation.mutate(id)}
+              onWithdraw={(id) => withdrawMutation.mutate(id)}
               showTenant={scope.mode !== 'own' || m.tenant === sharedTenant}
               sharedTenant={sharedTenant}
               onDelete={(id) => deleteMutation.mutate(id)}
@@ -352,6 +374,17 @@ export default function Memories() {
       >
         <Alert severity="error" variant="filled" onClose={() => setShareError('')}>
           {shareError}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!proposalError}
+        autoHideDuration={6000}
+        onClose={() => setProposalError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" variant="filled" onClose={() => setProposalError('')}>
+          {proposalError}
         </Alert>
       </Snackbar>
     </Box>
