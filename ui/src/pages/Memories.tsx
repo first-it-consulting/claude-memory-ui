@@ -11,6 +11,8 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
 import Snackbar from '@mui/material/Snackbar'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Switch from '@mui/material/Switch'
 import FormControl from '@mui/material/FormControl'
@@ -36,6 +38,23 @@ import { useWhoami } from '../useWhoami'
 
 type Sort = 'newest' | 'oldest' | 'relevance'
 
+// Space filter (bean o9y4): All (own + shared, the server default) / Mine
+// (own workspace only) / Shared (shared space only) — for every user, on top
+// of the admin workspace scope. Persisted per browser session (sessionStorage,
+// deliberately not the localStorage workspace-scope of admins).
+type Space = 'all' | 'own' | 'shared'
+const SPACE_KEY = 'cm.space-filter'
+
+function loadSpace(): Space {
+  try {
+    const v = sessionStorage.getItem(SPACE_KEY)
+    if (v === 'own' || v === 'shared') return v
+  } catch {
+    // private mode etc. — the choice still applies for this page session
+  }
+  return 'all'
+}
+
 export default function Memories() {
   const qc = useQueryClient()
   const { scope, params: scopeParams } = useScope()
@@ -52,6 +71,15 @@ export default function Memories() {
   // admin share flow (bean vd3y): card button -> confirm dialog -> PATCH
   const [toShare, setToShare] = useState<(typeof memories)[number] | null>(null)
   const [shareError, setShareError] = useState('')
+  const [space, setSpaceState] = useState<Space>(loadSpace)
+  const setSpace = (s: Space) => {
+    setSpaceState(s)
+    try {
+      sessionStorage.setItem(SPACE_KEY, s)
+    } catch {
+      // storage unavailable — the choice still applies for this page session
+    }
+  }
 
   const deferredSearch = useDeferredValue(search)
 
@@ -61,12 +89,14 @@ export default function Memories() {
     agent_id: agentFilter || undefined,
     category: categoryFilter || undefined,
     tag: autoOnly ? 'auto-promoted' : undefined,
+    space: space === 'all' ? undefined : space,
     ...scopeParams,
   }
 
   const { data: stats } = useQuery({
-    queryKey: ['stats', scopeParams],
-    queryFn: () => api.stats(scopeParams),
+    queryKey: ['stats', scopeParams, space],
+    queryFn: () =>
+      api.stats({ ...scopeParams, space: space === 'all' ? undefined : space }),
     refetchInterval: 30_000,
   })
 
@@ -147,6 +177,19 @@ export default function Memories() {
         />
 
         {isAdmin && <ScopeSelect />}
+
+        {/* Space filter for every user (bean o9y4) */}
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={space}
+          onChange={(_e, v) => v && setSpace(v as Space)}
+          aria-label="Space filter"
+        >
+          <ToggleButton value="all">All</ToggleButton>
+          <ToggleButton value="own">Mine</ToggleButton>
+          <ToggleButton value="shared">Shared</ToggleButton>
+        </ToggleButtonGroup>
 
         {!search && (
           <FormControl size="small" sx={{ minWidth: 130 }}>
