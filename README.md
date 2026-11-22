@@ -25,6 +25,22 @@ The app is a **React + Vite TypeScript single-page application** served as stati
 - **Tag rules** — view and manage keyword→tag auto-classification rules (writes admin-only).
 - **Transparent proxy** — the FastAPI layer serves the SPA and proxies API calls to the backend, so there's a single port to expose. With Keycloak configured it forwards the browser's `Authorization` header untouched; without it (legacy single-tenant mode) it injects the shared `BEARER_TOKEN`.
 
+## Screenshots
+
+From a demo workspace (invented data).
+
+![Memories tab: invented project decisions and dead ends with category and tag chips, per-tenant workspace selector](docs/images/memories.png)
+
+*Memories - list, search, filter, edit; every entry shows category, tags and date.*
+
+![Stats tab: totals, memories by category and agent, top tags](docs/images/stats.png)
+
+*Stats - totals, by category, by agent, top tags.*
+
+![Sessions tab: two agent sessions with checkpoints, project and harness columns, goal line each](docs/images/sessions.png)
+
+*Sessions - per-agent-session checkpoints (working memory), filterable by project and harness.*
+
 ---
 
 ## Architecture
