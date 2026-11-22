@@ -15,7 +15,7 @@ The app is a **React + Vite TypeScript single-page application** served as stati
 
 ## Features
 
-- **Keycloak login** — the SPA signs users in via Keycloak (authorization code + PKCE); every API call carries the user's access token and the backend scopes it to their workspace.
+- **Keycloak login** — the SPA signs users in via Keycloak (authorization code + PKCE, via `keycloak-js`); every API call carries the user's access token and the backend scopes it to their workspace. The SPA itself is Keycloak-only; the server behind it accepts any OIDC issuer, other providers are untested here.
 - **Multi-tenancy** — each user sees their own memories/sessions plus the admin-published shared space; admins get a workspace scope selector (mine / one tenant / all), the Jobs tab, a **Users** page for workspace management and a **Tokens** page that lists every user's API tokens (masked) for revocation.
 - **My tokens** — every user mints, lists and revokes their own API tokens (name, expiry 30/90/365 days, optional default harness; admins can opt a token into admin rights). The secret is shown once, the reveal dialog only closes via its button, and nothing is kept in browser storage. Revoking the shared `legacy-hooks` token needs a typed confirmation because it stops every unmigrated device.
 - **Memories** — list, search, filter by category/agent, edit content and tags, delete.
@@ -78,7 +78,7 @@ Runtime settings are environment variables (see `src/ui/app.py`):
 | `MCP_INTERNAL_URL` | `http://claude-memory:8080` | Backend claude-memory API URL (used by the proxy). |
 | `BEARER_TOKEN` | *(empty)* | Legacy mode only: shared token injected when no Keycloak is configured. Match this to claude-memory's `BEARER_TOKEN`. |
 | `UI_PORT` | `8081` | Port the proxy/SPA listens on. |
-| `KEYCLOAK_URL` | *(empty)* | Keycloak base URL; setting it enables browser login and per-user token forwarding. |
+| `KEYCLOAK_URL` | *(empty)* | Keycloak base URL; setting it enables browser login and per-user token forwarding. The UI speaks Keycloak's flow (`keycloak-js`) only; other OIDC providers are untested in the UI. |
 | `KEYCLOAK_REALM` | `master` | Realm the UI logs into (must match claude-memory's `OIDC_ISSUER` realm). |
 | `KEYCLOAK_CLIENT_ID` | `claude-memory-ui` | Public OIDC client; its id is the token audience the backend expects. |
 
