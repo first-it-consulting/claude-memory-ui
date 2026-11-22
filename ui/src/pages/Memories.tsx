@@ -4,7 +4,13 @@ import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
+import Snackbar from '@mui/material/Snackbar'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Switch from '@mui/material/Switch'
 import FormControl from '@mui/material/FormControl'
@@ -43,6 +49,9 @@ export default function Memories() {
   const [addText, setAddText] = useState('')
   const [addShared, setAddShared] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
+  // admin share flow (bean vd3y): card button -> confirm dialog -> PATCH
+  const [toShare, setToShare] = useState<(typeof memories)[number] | null>(null)
+  const [shareError, setShareError] = useState('')
 
   const deferredSearch = useDeferredValue(search)
 
@@ -94,11 +103,22 @@ export default function Memories() {
     onSuccess: invalidate,
   })
 
+  const shareMutation = useMutation({
+    mutationFn: (id: string) => api.share(id),
+    onSuccess: () => { setToShare(null); invalidate() },
+    // 403/404/503 come back as "403 Forbidden" style messages from request()
+    onError: (e: Error) => { setToShare(null); setShareError(`Share failed: ${e.message}`) },
+  })
+
   const sharedTenant = me?.shared_tenant ?? 'global'
   // Own workspace or (for admins) anything; non-admins never edit the shared
   // space or foreign workspaces — the server would answer 404 anyway.
   const canEdit = (m: (typeof memories)[number]) =>
     isAdmin || (!!me && m.tenant === me.user_id)
+  // admins only, and not for rows already in the shared space (the move
+  // would be a no-op there; the server answers already_shared)
+  const canShare = (m: (typeof memories)[number]) =>
+    isAdmin && m.tenant !== sharedTenant
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: 2, py: 3 }}>
@@ -240,11 +260,13 @@ export default function Memories() {
               key={m.id}
               memory={m}
               canEdit={canEdit(m)}
+              canShare={canShare(m)}
               showTenant={scope.mode !== 'own' || m.tenant === sharedTenant}
               sharedTenant={sharedTenant}
               onDelete={(id) => deleteMutation.mutate(id)}
               onUpdate={(id, content) => updateMutation.mutate({ id, content })}
               onUpdateTags={(id, tags) => updateTagsMutation.mutate({ id, tags })}
+              onShare={() => setToShare(m)}
             />
           ))}
           {memories.length === 0 && (
@@ -254,6 +276,41 @@ export default function Memories() {
           )}
         </Stack>
       )}
+
+      {/* Share-to-all confirm (admin, bean vd3y) */}
+      <Dialog open={!!toShare} onClose={() => setToShare(null)}>
+        <DialogTitle>Share to all?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This moves the memory into the shared space (<b>{sharedTenant}</b>) — every
+            workspace will read it, and it leaves <b>{toShare?.tenant}</b>'s own list
+            (the original owner keeps seeing it via the shared space). The id is kept
+            and the move is recorded with you as <code>shared_by</code>.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setToShare(null)}>Cancel</Button>
+          <Button
+            color="primary"
+            variant="contained"
+            disabled={shareMutation.isPending || !toShare}
+            onClick={() => toShare && shareMutation.mutate(toShare.id)}
+          >
+            Share to all
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={!!shareError}
+        autoHideDuration={6000}
+        onClose={() => setShareError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" variant="filled" onClose={() => setShareError('')}>
+          {shareError}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
