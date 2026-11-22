@@ -11,6 +11,8 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined'
 import EditIcon from '@mui/icons-material/EditOutlined'
 import LabelIcon from '@mui/icons-material/LabelOutlined'
 import ShareIcon from '@mui/icons-material/ShareOutlined'
+import OutboxIcon from '@mui/icons-material/OutboxOutlined'
+import UndoIcon from '@mui/icons-material/UndoOutlined'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import type { Memory } from '../api/memories'
@@ -29,6 +31,11 @@ interface Props {
   /** admin only: offer 'Share to all' on memories not yet in the shared
    *  space (server bean vd3y — the move keeps the id) */
   canShare?: boolean
+  /** owner only: offer 'Propose to share' (server bean oi38 — an admin
+   *  reviews it; the memory stays in the workspace until approved) */
+  canPropose?: boolean
+  /** owner only: an open proposal can be pulled back */
+  onWithdraw?: (id: string) => void
   /** show the owning workspace chip (admin scope / shared entries) */
   showTenant?: boolean
   sharedTenant?: string
@@ -36,9 +43,10 @@ interface Props {
   onUpdate: (id: string, content: string) => void
   onUpdateTags: (id: string, tags: string[]) => void
   onShare: (id: string) => void
+  onPropose?: (id: string) => void
 }
 
-export default function MemoryCard({ memory, canEdit, canShare, showTenant, sharedTenant, onDelete, onUpdate, onUpdateTags, onShare }: Props) {
+export default function MemoryCard({ memory, canEdit, canShare, canPropose, onWithdraw, showTenant, sharedTenant, onDelete, onUpdate, onUpdateTags, onShare, onPropose }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(memory.memory)
 
@@ -152,6 +160,18 @@ export default function MemoryCard({ memory, canEdit, canShare, showTenant, shar
                   <Chip label="auto" size="small" sx={{ fontSize: 11, bgcolor: '#ef6c00', color: '#fff' }} />
                 </Tooltip>
               )}
+
+              {/* Proposal state (bean oi38) — only ever set on own rows */}
+              {memory.share_status === 'proposed' && (
+                <Tooltip title="Proposed for the shared space — waiting for an admin to review">
+                  <Chip label="proposed" size="small" color="info" variant="outlined" sx={{ fontSize: 11 }} />
+                </Tooltip>
+              )}
+              {memory.share_status === 'rejected' && (
+                <Tooltip title={`Rejected: ${memory.rejected_reason || 'no reason given'} — edit and propose again if you like`}>
+                  <Chip label="rejected" size="small" color="error" variant="outlined" sx={{ fontSize: 11 }} />
+                </Tooltip>
+              )}
               {memory.score != null && (
                 <Chip label={`score ${memory.score.toFixed(3)}`} size="small" sx={{ fontSize: 11, fontFamily: 'monospace' }} />
               )}
@@ -219,6 +239,16 @@ export default function MemoryCard({ memory, canEdit, canShare, showTenant, shar
                 {canShare && (
                   <Tooltip title="Share to all — move this memory into the shared space (every workspace can read it)">
                     <IconButton size="small" onClick={() => onShare(memory.id)} color="primary"><ShareIcon fontSize="small" /></IconButton>
+                  </Tooltip>
+                )}
+                {canPropose && memory.share_status !== 'proposed' && onPropose && (
+                  <Tooltip title={memory.share_status === 'rejected' ? 'Propose for the shared space again' : 'Propose to share — an admin reviews it; the memory stays here until approved'}>
+                    <IconButton size="small" onClick={() => onPropose(memory.id)} color="primary"><OutboxIcon fontSize="small" /></IconButton>
+                  </Tooltip>
+                )}
+                {canPropose && memory.share_status === 'proposed' && onWithdraw && (
+                  <Tooltip title="Withdraw the open proposal">
+                    <IconButton size="small" onClick={() => onWithdraw(memory.id)}><UndoIcon fontSize="small" /></IconButton>
                   </Tooltip>
                 )}
                 <Tooltip title="Delete"><IconButton size="small" onClick={() => onDelete(memory.id)} color="error"><DeleteIcon fontSize="small" /></IconButton></Tooltip>

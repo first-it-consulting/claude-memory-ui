@@ -12,6 +12,10 @@ export interface Memory {
   created_at: string
   updated_at: string
   score: number | null
+  /** proposal state (server bean oi38): '' | 'proposed' | 'rejected' —
+   *  only meaningful on the owner's own rows */
+  share_status?: string
+  rejected_reason?: string
 }
 
 export interface Stats {

@@ -24,9 +24,10 @@ import Sessions from './pages/Sessions'
 import Users from './pages/Users'
 import Tokens from './pages/Tokens'
 import AdminTokens from './pages/AdminTokens'
+import Proposals from './pages/Proposals'
 import VersionFooter from './components/VersionFooter'
 
-type Page = 'memories' | 'sessions' | 'stats' | 'rules' | 'tokens' | 'jobs' | 'users' | 'admin-tokens'
+type Page = 'memories' | 'sessions' | 'stats' | 'rules' | 'tokens' | 'jobs' | 'users' | 'admin-tokens' | 'proposals'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 10_000 } },
@@ -149,6 +150,7 @@ function Shell() {
             <Tab label="Stats" value="stats" />
             <Tab label="Tag Rules" value="rules" />
             <Tab label="My tokens" value="tokens" />
+            {isAdmin && <Tab label="Proposals" value="proposals" />}
             {isAdmin && <Tab label="Jobs" value="jobs" />}
             {isAdmin && <Tab label="Users" value="users" />}
             {isAdmin && <Tab label="Tokens" value="admin-tokens" />}
@@ -180,6 +182,7 @@ function Shell() {
         {page === 'stats' && <Stats />}
         {page === 'rules' && <TagRules />}
         {page === 'tokens' && <Tokens />}
+        {page === 'proposals' && isAdmin && <Proposals />}
         {page === 'jobs' && isAdmin && <Jobs />}
         {page === 'users' && isAdmin && <Users />}
         {page === 'admin-tokens' && isAdmin && <AdminTokens />}
