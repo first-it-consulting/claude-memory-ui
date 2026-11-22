@@ -33,11 +33,14 @@ export interface FetchParams {
   /** admin workspace scope */
   scope?: 'all'
   tenant?: string
+  /** space filter (bean o9y4): own = no shared rows, shared = only them;
+   *  omitted = the default union 'own + shared' */
+  space?: 'own' | 'shared'
 }
 
 function qs(params: FetchParams): string {
   const qs = new URLSearchParams()
-  for (const k of ['q', 'sort', 'agent_id', 'category', 'tag', 'scope', 'tenant'] as const) {
+  for (const k of ['q', 'sort', 'agent_id', 'category', 'tag', 'scope', 'tenant', 'space'] as const) {
     const v = params[k]
     if (v) qs.set(k, v)
   }
