@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.6...v0.1.7) (2026-11-27)
+
+
+### Features
+
+* give the hermes harness chip its own gold colour (v7fh) ([#36](https://github.com/first-it-consulting/claude-memory-ui/issues/36)) ([708c751](https://github.com/first-it-consulting/claude-memory-ui/commit/708c751467fd4f9d6459fc31cab85173e376dc65))
+
 ## [0.1.6](https://github.com/first-it-consulting/claude-memory-ui/compare/v0.1.5...v0.1.6) (2026-11-22)
 
 
