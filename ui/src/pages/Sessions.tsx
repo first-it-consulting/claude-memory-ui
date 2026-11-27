@@ -36,6 +36,7 @@ import { useWhoami } from '../useWhoami'
 const HARNESS_COLORS: Record<string, string> = {
   claude: '#d97757',
   codex: '#10a37f',
+  hermes: '#eab308',
   pi: '#7c4dff',
   qwen: '#0288d1',
 }
